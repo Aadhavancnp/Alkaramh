@@ -1,12 +1,37 @@
-import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useContext } from 'react'; // Import useContext
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
+import { useNavigation } from '@react-navigation/native';
+import AuthContext from '../../context/AuthContext'; // Import AuthContext
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Footer from '../../Utils/Footer/Footer';
+import ChangePasswordModal from './ChangePasswordModal';
+
 const Profile = () => {
+  const navigation = useNavigation<any>();
+  const authContext = useContext(AuthContext);
+  const { user, logoutAction } = authContext || {};
+
+  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);
+
+
+  const handleLogout = async () => {
+    if (logoutAction) {
+      try {
+        await logoutAction();
+        // Navigation to Login screen might be handled by a root navigator
+        // listening to auth state, or can be explicit here.
+        navigation.navigate('Login'); 
+      } catch (e) {
+        console.error("Logout failed", e);
+        Alert.alert("Error", "Logout failed. Please try again.");
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -14,23 +39,38 @@ const Profile = () => {
           <View style={styles.firsthalfinner}>
             <View style={styles.profilepic}></View>
             <View style={styles.profiledetail}>
-              <Text style={styles.name}>Sivakumar S</Text>
-              <Text style={styles.email}>Not updated</Text>
+              <Text style={styles.name}>{user?.name || 'Guest User'}</Text>
+              <Text style={styles.email}>{user?.email || 'Not logged in'}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.secondhalf}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
-          <ListItem icon="person-outline" label="Personal Information" />
+          <ListItem icon="person-outline" label="Personal Information" onPress={() => user ? null : navigation.navigate('Login')}/>
+          {user && ( // Only show Change Password if user is logged in
+            <ListItem
+              icon="lock-closed-outline"
+              label="Change Password"
+              onPress={() => setIsChangePasswordModalVisible(true)}
+            />
+          )}
           <ListItem
             icon="notifications-outline"
             label="Notification Preferences"
           />
 
           <Text style={styles.sectionTitle}>Orders</Text>
-          <ListItem icon="cube-outline" label="Your orders" />
-          <ListItem icon="heart-outline" label="Wishlist" />
+          <ListItem 
+            icon="cube-outline" 
+            label="Your orders" 
+            onPress={() => user ? navigation.navigate('OrderHistoryScreen') : navigation.navigate('Login')}
+          />
+          <ListItem 
+            icon="heart-outline" 
+            label="Wishlist" 
+            onPress={() => user ? navigation.navigate('WishlistScreen') : navigation.navigate('Login')}
+          />
           <ListItem icon="map-outline" label="Address book" />
 
           <Text style={styles.sectionTitle}>More</Text>
@@ -38,9 +78,20 @@ const Profile = () => {
           <ListItem icon="sync-outline" label="Check app updates" />
           <ListItem icon="help-circle-outline" label="Help" />
           <ListItem icon="settings-outline" label="Settings" />
+          {user && ( // Only show Logout if user is logged in
+            <ListItem 
+              icon="log-out-outline" 
+              label="Logout" 
+              onPress={handleLogout} 
+            />
+          )}
         </View>
       </ScrollView>
       <Footer />
+      <ChangePasswordModal 
+        visible={isChangePasswordModalVisible} 
+        onClose={() => setIsChangePasswordModalVisible(false)} 
+      />
     </View>
   );
 };
@@ -48,10 +99,11 @@ const Profile = () => {
 interface ListItemProps {
   icon: string;
   label: string;
+  onPress?: () => void; // Make onPress prop optional
 }
 
-const ListItem: React.FC<ListItemProps> = ({ icon, label }) => (
-  <TouchableOpacity style={styles.item}>
+const ListItem: React.FC<ListItemProps> = ({ icon, label, onPress }) => (
+  <TouchableOpacity style={styles.item} onPress={onPress} disabled={!onPress}>
     <Icon name={icon} type="ionicon" size={22} color="#283593" />
     <Text style={styles.itemText}>{label}</Text>
     <Icon name="chevron-forward-outline" type="ionicon" size={22} color="#999" />

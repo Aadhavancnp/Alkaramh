@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react"; // Import useContext
 import {
   View,
   Text,
@@ -7,52 +7,168 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Alert, // Added for displaying messages
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import AuthContext from "../../context/AuthContext"; // Import AuthContext
 
 type Variant = "10kg" | "20kg" | "30kg";
+type Quantity = 10 | 20 | 30 | 40; // Keep for now
 
-type Quantity = 10 | 20 | 30 | 40;
+interface Product {
+  _id: string;
+  name: { en: string; ar?: string };
+  description: { en: string; ar?: string };
+  price: number;
+  image: string[];
+  // Add other fields if necessary, like variants, stock, etc.
+}
 
 const ProductDetails: React.FC = () => {
+  // Assume productId is passed as a prop or from route params
+  const productId = '65ca9bf20357795719945494'; // Placeholder ID
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [selectedVariant, setSelectedVariant] = useState<Variant>("10kg");
-  const [selectedQuantity, setSelectedQuantity] = useState<Quantity | null>(
-    null
-  );
+  const [selectedQuantity, setSelectedQuantity] = useState<Quantity | null>(null);
   const [customQuantity, setCustomQuantity] = useState<string>("");
+
+  // State for Wishlist
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+  const [wishlistLoading, setWishlistLoading] = useState<boolean>(false);
+  const [wishlistError, setWishlistError] = useState<string | null>(null);
+
+  const authContext = useContext(AuthContext);
+  const { user, token } = authContext || {};
+
+
+  useEffect(() => {
+    if (!productId) {
+      setError("Product ID is missing.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchProductDetails = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:3000/api/products/${productId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductDetails();
+  }, [productId]);
+
+  const handleAddToWishlist = async () => {
+    if (!user || !token) {
+      Alert.alert("Authentication Error", "You need to be logged in to add items to your wishlist.");
+      setWishlistError("User not authenticated.");
+      return;
+    }
+    if (!product || !product._id) {
+      Alert.alert("Error", "Product details not available.");
+      return;
+    }
+    if (isWishlisted) {
+      Alert.alert("Info", "This item is already in your wishlist.");
+      return;
+    }
+
+    setWishlistLoading(true);
+    setWishlistError(null);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/wishlist/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: user._id,
+          productId: product._id,
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to add to wishlist.");
+      }
+
+      setIsWishlisted(true);
+      Alert.alert("Success", responseData.message || "Added to wishlist!");
+
+    } catch (err: any) {
+      setWishlistError(err.message);
+      Alert.alert("Wishlist Error", err.message || "Could not add to wishlist.");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <View style={styles.centered}><Text>Loading product details...</Text></View>;
+  }
+
+  if (error) {
+    return <View style={styles.centered}><Text>Error: {error}</Text></View>;
+  }
+
+  if (!product) {
+    return <View style={styles.centered}><Text>Product not found.</Text></View>;
+  }
 
   return (
     <ScrollView style={styles.container}>
       {/* Product Image */}
       <Image
-        source={{ uri: "https://5.imimg.com/data5/SELLER/Default/2023/3/295208831/IJ/UB/KV/184869052/sorghum-red-png-500x500.png" }} // Replace with your real image link
+        source={{ uri: product.image && product.image.length > 0 ? product.image[0] : "https://via.placeholder.com/300" }}
         style={styles.productImage}
         resizeMode="contain"
       />
 
       {/* Product Title */}
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>Wheat Straw - 6kg</Text>
-        <TouchableOpacity>
-          <Ionicons name="heart-outline" size={wp("6%")} color="#666" />
+        <Text style={styles.title}>{product.name.en}</Text>
+        <TouchableOpacity onPress={handleAddToWishlist} disabled={wishlistLoading}>
+          <Ionicons
+            name={isWishlisted ? "heart" : "heart-outline"}
+            size={wp("6%")}
+            color={isWishlisted ? "red" : "#666"}
+          />
         </TouchableOpacity>
       </View>
+      
+      {wishlistError && <Text style={styles.wishlistErrorText}>{wishlistError}</Text>}
 
-      {/* Rating */}
+      {/* Rating - Assuming not available from backend for now */}
       <View style={styles.ratingContainer}>
         <Ionicons name="star" size={wp("4.5%")} color="#f5c518" />
-        <Text style={styles.ratingText}>4.5</Text>
-        <Text style={styles.reviewText}>(1.24K Reviews)</Text>
+        <Text style={styles.ratingText}>N/A</Text>
+        <Text style={styles.reviewText}>(No reviews yet)</Text>
       </View>
 
       {/* Price */}
-      <Text style={styles.priceText}>12 QAR</Text>
+      <Text style={styles.priceText}>{product.price} QAR</Text>
 
-      {/* Variants */}
+      {/* Variants - Keep existing UI for now, will need backend integration later */}
       <View style={styles.variantsContainer}>
         <TouchableOpacity
           style={[
@@ -74,12 +190,10 @@ const ProductDetails: React.FC = () => {
       {/* Description */}
       <Text style={styles.sectionTitle}>Description</Text>
       <Text style={styles.descriptionText}>
-        Al Karamh is renowned for its high-quality products. This product
-        showcases their dedication to excellence. Customers trust Al Karamh for
-        reliable and superior goods.
+        {product.description.en}
       </Text>
 
-      {/* Choose Quantity */}
+      {/* Choose Quantity - Keep existing UI for now, will need backend integration later */}
       <Text style={styles.sectionTitle}>Choose Quantity</Text>
       <View style={styles.quantityContainer}>
         {[10, 20, 30, 40].map((qty) => (
@@ -125,6 +239,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     padding: wp("5%"),
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: wp("5%"),
+  },
+  wishlistErrorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: hp("1%"),
   },
   productImage: {
     width: "100%",
