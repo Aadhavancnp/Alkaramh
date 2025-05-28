@@ -12,13 +12,19 @@ import { NavigationContainer } from "@react-navigation/native";
 import {createStackNavigator} from "@react-navigation/stack";
 import Home from "./components/Homepage/Home";
 import ProductDetails from "./components/ProductIndetail/View";
+import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
+import WishlistScreen from "./components/Profile/WishlistScreen"; // Assuming this was added from previous tasks
+import OrderHistoryScreen from "./components/Profile/OrderHistoryScreen"; // Assuming this was added
+
 const Stack = createStackNavigator();
 export default function App() {
   return (
-    <NavigationContainer>
-      <Routers />
-      <StatusBar style="auto" />
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Routers />
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
 const Routers = () => {
@@ -35,6 +41,8 @@ const Routers = () => {
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="ProductIndetail" component={ProductDetails} />
       <Stack.Screen name="Checkout" component={Checkoutpage}/>
+      <Stack.Screen name="WishlistScreen" component={WishlistScreen} /> 
+      <Stack.Screen name="OrderHistoryScreen" component={OrderHistoryScreen} />
     </Stack.Navigator>
   );
 };
