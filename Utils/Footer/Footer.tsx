@@ -11,7 +11,7 @@ const Footer = () => {
 
   const tabs = [
     { name: 'Home', icon: 'home' },
-    { name: 'Wishlist', icon: 'heart' },
+    { name: 'WishlistScreen', icon: 'heart' },
     { name: 'Cart', icon: 'shopping-cart' },
     { name: 'Profile', icon: 'user' },
   ];

@@ -52,7 +52,7 @@ const handelseall = (): void => {
       {/* Filter Section */}
       <View style={styles.filterContainer}>
         <Text style={styles.filterTitle}>
-          Filters{" "}
+          Filters<Text>{" "}</Text>
           <Ionicons
             name="funnel-outline"
             size={15}
@@ -77,7 +77,7 @@ const handelseall = (): void => {
         <TouchableOpacity onPress={(handelseall)}>
           <Text style={{ color: "blue" }}>See All</Text>
         </TouchableOpacity>
-      </View>{" "}
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
