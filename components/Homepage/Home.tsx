@@ -1,19 +1,19 @@
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet } from 'react-native';
-import Header from './Header';
-import ContentPage from './Contentpage';
-import DownProductPage from './Downproduct';
-import Footer from '../../Utils/Footer/Footer';
+import React from "react";
+import { SafeAreaView, ScrollView, StyleSheet } from "react-native";
+import Footer from "../../Utils/Footer/Footer";
+import ContentPage from "./Contentpage";
+import DownProductPage from "./Downproduct";
+import Header from "./Header";
+
 const Home = () => {
   return (
     <SafeAreaView style={styles.container}>
-      {/* ScrollView should wrap everything */}
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}>
         <Header />
         <ContentPage />
         <DownProductPage />
       </ScrollView>
-      <Footer/>
+      <Footer />
     </SafeAreaView>
   );
 };
@@ -21,7 +21,7 @@ const Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
 });
 

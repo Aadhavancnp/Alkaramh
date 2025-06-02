@@ -16,7 +16,7 @@ import {
     widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import AuthContext from '../../context/AuthContext'; // Import AuthContext
-
+import Footer from '@/Utils/Footer/Footer';
 // Interface for Product data within a wishlist item
 interface WishlistedProduct {
   _id: string;
@@ -109,43 +109,43 @@ const WishlistScreen: React.FC = () => {
     return (
       <SafeAreaView style={styles.centeredView}>
         <ActivityIndicator size="large" color="#007bff" />
-        <Text style={styles.loadingText}>Loading wishlist...</Text>
+        <Text style={{ fontSize: wp('4%'), color: '#666', textAlign: 'center' }}>Loading wishlist...</Text>
       </SafeAreaView>
     );
   }
   
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={wp('6%')} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Wishlist</Text>
-        <View style={{ width: wp('6%') }} />{/* Spacer for centering title */}
-      </View>
-
-      {error && ( // Display error prominently if it exists
-         <View style={styles.centeredView}>
-            <Text style={styles.errorText}>{error}</Text>
-         </View>
-      )}
-
-      {!error && wishlistItems.length === 0 && ( // Only show empty if no error
-        <View style={styles.centeredView}>
-          <Ionicons name="heart-outline" size={wp('20%')} color="#ccc" />
-          <Text style={styles.emptyWishlistText}>Your wishlist is empty.</Text>
+    <View style={{flex: 1, justifyContent: 'space-between'}}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={wp('6%')} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Wishlist</Text>
+          <View style={{ width: wp('6%') }} />
         </View>
-      )}
-
-      {!error && wishlistItems.length > 0 && (
-        <FlatList
-          data={wishlistItems}
-          renderItem={renderProductItem}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={styles.listContentContainer}
-        />
-      )}
-    </SafeAreaView>
+        {error && (
+           <View style={styles.centeredView}>
+              <Text style={styles.errorText}>{error}</Text>
+           </View>
+        )}
+        {!error && wishlistItems.length === 0 && (
+          <View style={styles.centeredView}>
+            <Ionicons name="heart-outline" size={wp('20%')} color="#ccc" />
+            <Text style={styles.emptyWishlistText}>Your wishlist is empty</Text>
+          </View>
+        )}
+        {!error && wishlistItems.length > 0 && (
+          <FlatList
+            data={wishlistItems}
+            renderItem={renderProductItem}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={styles.listContentContainer}
+          />
+        )}
+      </SafeAreaView>
+      <Footer />
+    </View>
   );
 };
 
@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',
+    paddingBottom: 80, // Add enough padding for the footer height
   },
   centeredView: {
     flex: 1,

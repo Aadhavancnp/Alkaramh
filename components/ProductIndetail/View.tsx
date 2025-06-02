@@ -1,241 +1,287 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useContext, useEffect, useState } from "react"; // Import useContext
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import axios from "axios";
+import * as React from "react";
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import {
-    heightPercentageToDP as hp,
-    widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import AuthContext from "../../context/AuthContext"; // Import AuthContext
-import {  useRoute } from "@react-navigation/native";
+import apiConfig from "../../api.json";
 
 type Variant = "10kg" | "20kg" | "30kg";
-type Quantity = 10 | 20 | 30 | 40; // Keep for now
 
 interface Product {
   _id: string;
-  name: { en: string; ar?: string };
-  description: { en: string; ar?: string };
+  name?: { en: string; ar?: string };
+  title?: string;
+  description?: { en: string; ar?: string } | string;
   price: number;
-  image: string[];
-  // Add other fields if necessary, like variants, stock, etc.
-  category?: string; // Optional, if needed
-  stock?: number; // Optional, if needed
-  rating?: number; // Optional, if needed
-  
+  image: string[] | string;
+  category?: string;
+  stock?: number;
+  rating?: number;
 }
 
+type ProductDetailsRouteParams = {
+  product: Product | Product[];
+};
+const VARIANTS: Variant[] = ["10kg", "20kg", "30kg"];
+
 const ProductDetails: React.FC = () => {
-  // Assume productId is passed as a prop or from route params
-  // const productId = '65ca9bf20357795719945494'; // Placeholder ID
-  const route = useRoute();
-  const productId = route.params?.productId || ''; // Get productId from route params
+  const route =
+    useRoute<RouteProp<{ params: ProductDetailsRouteParams }, "params">>();
+  // Support array or single product
+  const productParam = route.params?.product;
+  const product = Array.isArray(productParam) ? productParam[0] : productParam;
+  console.log(
+    "ProductDetailsRouteParams",
+    JSON.stringify(route.params, null, 2)
+  );
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = React.useState<Variant>("10kg");
+  const [quantity, setQuantity] = React.useState<string>("1");
+  const [lang, setLang] = React.useState<"en" | "ar">("en");
+  const [addingToCart, setAddingToCart] = React.useState(false);
 
-  const [selectedVariant, setSelectedVariant] = useState<Variant>("10kg");
-  const [selectedQuantity, setSelectedQuantity] = useState<Quantity | null>(null);
-  const [customQuantity, setCustomQuantity] = useState<string>("");
+  if (!product) {
+    return (
+      <View style={styles.centered}>
+        <Text>No product data available.</Text>
+      </View>
+    );
+  }
 
-  // State for Wishlist
-  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
-  const [wishlistLoading, setWishlistLoading] = useState<boolean>(false);
-  const [wishlistError, setWishlistError] = useState<string | null>(null);
+  // Support both array and string for image
+  const productImage =
+    Array.isArray(product.image) && product.image.length > 0
+      ? product.image[0]
+      : typeof product.image === "string"
+      ? product.image
+      : "https://via.placeholder.com/300";
 
-  const authContext = useContext(AuthContext);
-  const { user, token } = authContext || {};
+  // Support both name/title and description structures, with language toggle
+  const productTitle =
+    (typeof product.name === "object" && product.name?.[lang]) ||
+    product.title ||
+    "No Title";
+  const productDescription =
+    typeof product.description === "string"
+      ? product.description
+      : (product.description?.[lang] as string) ||
+        "No description available for this product.";
 
+  // Price fallback
+  const productPrice =
+    typeof product.price === "number" && !isNaN(product.price)
+      ? product.price
+      : "N/A";
 
-  useEffect(() => {
-    if (!productId) {
-      setError("Product ID is missing.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchProductDetails = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`https://alkarmah-backend.onrender.com/api/products/${productId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setProduct(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductDetails();
-  }, [productId]);
-
-  const handleAddToWishlist = async () => {
-    if (!user || !token) {
-      Alert.alert("Authentication Error", "You need to be logged in to add items to your wishlist.");
-      setWishlistError("User not authenticated.");
-      return;
-    }
-    if (!product || !product._id) {
-      Alert.alert("Error", "Product details not available.");
-      return;
-    }
-    if (isWishlisted) {
-      Alert.alert("Info", "This item is already in your wishlist.");
-      return;
-    }
-
-    setWishlistLoading(true);
-    setWishlistError(null);
-
+  const handleAddToCart = async () => {
+    setAddingToCart(true);
     try {
-      const response = await fetch('https://alkarmah-backend.onrender.com/api/wishlist/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId: user._id,
-          productId: product._id,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to add to wishlist.");
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) {
+        alert("Please login to add items to your cart.");
+        setAddingToCart(false);
+        return;
       }
-
-      setIsWishlisted(true);
-      Alert.alert("Success", responseData.message || "Added to wishlist!");
-
+      console.log("Data requested for add to cart:", {
+        userId,
+        productid: product._id,
+        quantity: Number(quantity) || 1,
+        price: Number(productPrice) * Number(quantity),
+      });
+      const response = await axios.post(
+        `${apiConfig.API_URL}/cart/add`,
+        {
+          userId,
+          productId: product._id,
+          quantity: Number(quantity) || 1,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      console.log(
+        "Add to cart response:",
+        JSON.stringify(response.data, null, 2)
+      );
+      if (response.data && response.data.success) {
+        alert(response.data.message || "Added to cart successfully!");
+      } else {
+        alert(response.data.message || "Failed to add to cart.");
+      }
     } catch (err: any) {
-      setWishlistError(err.message);
-      Alert.alert("Wishlist Error", err.message || "Could not add to wishlist.");
+      alert(
+        err.response?.data?.message ||
+          err.message ||
+          "An error occurred while adding to cart."
+      );
     } finally {
-      setWishlistLoading(false);
+      setAddingToCart(false);
     }
   };
 
-  if (loading) {
-    return <View style={styles.centered}><Text>Loading product details...</Text></View>;
-  }
-
-  if (error) {
-    return <View style={styles.centered}><Text>Error: {error}</Text></View>;
-  }
-
-  if (!product) {
-    return <View style={styles.centered}><Text>Product not found.</Text></View>;
-  }
-
   return (
-    <ScrollView style={styles.container}>
-      {/* Product Image */}
-      <Image
-        source={{ uri: product.image && product.image.length > 0 ? product.image[0] : "https://via.placeholder.com/300" }}
-        style={styles.productImage}
-        resizeMode="contain"
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <ScrollView
+              style={styles.container}
+              contentContainerStyle={{ paddingBottom: 140 }} // Make room for footer
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Product Image */}
+              <Image
+                source={{
+                  uri: productImage,
+                }}
+                style={styles.productImage}
+                resizeMode="contain"
+              />
 
-      {/* Product Title */}
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>{product.name.en}</Text>
-        <TouchableOpacity onPress={handleAddToWishlist} disabled={wishlistLoading}>
-          <Ionicons
-            name={isWishlisted ? "heart" : "heart-outline"}
-            size={wp("6%")}
-            color={isWishlisted ? "red" : "#666"}
-          />
-        </TouchableOpacity>
-      </View>
-      
-      {wishlistError && <Text style={styles.wishlistErrorText}>{wishlistError}</Text>}
+              <View style={styles.toggleContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    lang === "en" && styles.toggleSelected,
+                  ]}
+                  onPress={() => setLang("en")}
+                >
+                  <Text
+                    style={
+                      lang === "en"
+                        ? styles.toggleTextSelected
+                        : styles.toggleText
+                    }
+                  >
+                    EN
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    lang === "ar" && styles.toggleSelected,
+                  ]}
+                  onPress={() => setLang("ar")}
+                >
+                  <Text
+                    style={
+                      lang === "ar"
+                        ? styles.toggleTextSelected
+                        : styles.toggleText
+                    }
+                  >
+                    AR
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-      {/* Rating - Assuming not available from backend for now */}
-      <View style={styles.ratingContainer}>
-        <Ionicons name="star" size={wp("4.5%")} color="#f5c518" />
-        <Text style={styles.ratingText}>N/A</Text>
-        <Text style={styles.reviewText}>(No reviews yet)</Text>
-      </View>
+              {/* Product Title */}
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{productTitle}</Text>
+                <TouchableOpacity>
+                  <Ionicons name="heart-outline" size={24} color="#888" />
+                </TouchableOpacity>
+              </View>
 
-      {/* Price */}
-      <Text style={styles.priceText}>{product.price} QAR</Text>
+              {/* Rating and Price */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: hp("1%"),
+                }}
+              >
+                <Ionicons name="star" size={wp("4.5%")} color="#f5c518" />
+                <Text style={styles.ratingText}>{product.rating ?? 4.5} ★</Text>
+                <Text style={styles.reviewText}>(1.24K Reviews)</Text>
+              </View>
+              <Text style={styles.priceText}>{productPrice} QAR</Text>
 
-      {/* Variants - Keep existing UI for now, will need backend integration later */}
-      <View style={styles.variantsContainer}>
-        <TouchableOpacity
-          style={[
-            styles.variantButton,
-            selectedVariant === "10kg" && styles.variantSelected,
-          ]}
-          onPress={() => setSelectedVariant("10kg")}
-        >
-          <Text style={styles.variantText}>10 kg</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.variantButtonDisabled]}>
-          <Text style={styles.variantTextDisabled}>20 kg</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.variantButtonDisabled]}>
-          <Text style={styles.variantTextDisabled}>30 kg</Text>
-        </TouchableOpacity>
-      </View>
+              {/* Variants */}
+              <Text style={styles.sectionTitle}>Variants</Text>
+              <View style={styles.variantsContainer}>
+                {VARIANTS.map((variant) => (
+                  <TouchableOpacity
+                    key={variant}
+                    style={[
+                      styles.variantButton,
+                      selectedVariant === variant && styles.variantSelected,
+                    ]}
+                    onPress={() => setSelectedVariant(variant)}
+                  >
+                    <Text
+                      style={[
+                        styles.variantText,
+                        selectedVariant === variant && { color: "#fff" },
+                      ]}
+                    >
+                      {variant}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
-      {/* Description */}
-      <Text style={styles.sectionTitle}>Description</Text>
-      <Text style={styles.descriptionText}>
-        {product.description.en}
-      </Text>
+              {/* Description */}
+              <Text style={styles.sectionTitle}>Description</Text>
+              <Text style={styles.descriptionText}>{productDescription}</Text>
 
-      {/* Choose Quantity - Keep existing UI for now, will need backend integration later */}
-      <Text style={styles.sectionTitle}>Choose Quantity</Text>
-      <View style={styles.quantityContainer}>
-        {[10, 20, 30, 40].map((qty) => (
-          <TouchableOpacity
-            key={qty}
-            style={[
-              styles.quantityButton,
-              selectedQuantity === qty && styles.quantitySelected,
-            ]}
-            onPress={() => setSelectedQuantity(qty as Quantity)}
-          >
-            <Text style={styles.quantityText}>{qty}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Custom Quantity */}
-      <TextInput
-        placeholder="Custom"
-        keyboardType="numeric"
-        value={customQuantity}
-        onChangeText={(text) => setCustomQuantity(text)}
-        style={styles.customInput}
-      />
-
-      {/* Action Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addToCartButton}>
-          <Text style={styles.buttonText}>Add to cart</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buyNowButton}>
-          <Text style={styles.buttonText}>Buy Now</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+              {/* Quantity */}
+              <Text style={styles.sectionTitle}>Choose Quantity</Text>
+              <View style={styles.quantityInputContainer}>
+                <TextInput
+                  style={styles.quantityInput}
+                  keyboardType="numeric"
+                  value={quantity}
+                  onChangeText={setQuantity}
+                  placeholder="Enter quantity"
+                  maxLength={4}
+                  returnKeyType="done"
+                />
+              </View>
+            </ScrollView>
+            {/* Footer always visible, not overlapping */}
+            <View style={styles.footerFixed}>
+              <TouchableOpacity
+                style={styles.addToCartButton}
+                onPress={handleAddToCart}
+                disabled={addingToCart}
+              >
+                <Text style={styles.buttonText}>
+                  {addingToCart ? "Adding..." : "Add to cart"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buyNowButton}>
+                <Text style={[styles.buttonText, { color: "#fff" }]}>
+                  Buy Now
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -244,25 +290,45 @@ export default ProductDetails;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
     backgroundColor: "#fff",
-    padding: wp("5%"),
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: wp("5%"),
-  },
-  wishlistErrorText: {
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: hp("1%"),
   },
   productImage: {
     width: "100%",
-    height: hp("30%"),
-    marginBottom: hp("2%"),
-    borderRadius: wp("2%"),
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 16,
+    backgroundColor: "#f5f5f5",
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    alignSelf: "flex-end",
+    marginBottom: 8,
+    marginTop: -8,
+  },
+  toggleButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 4,
+    backgroundColor: "#f0f0f0",
+  },
+  toggleSelected: {
+    backgroundColor: "#373fd4",
+  },
+  toggleText: {
+    color: "#373fd4",
+    fontWeight: "bold",
+  },
+  toggleTextSelected: {
+    color: "#fff",
+    fontWeight: "bold",
   },
   titleContainer: {
     flexDirection: "row",
@@ -273,11 +339,8 @@ const styles = StyleSheet.create({
     fontSize: wp("5%"),
     fontWeight: "bold",
     color: "#333",
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: hp("1%"),
+    flex: 1,
+    marginRight: 8,
   },
   ratingText: {
     marginLeft: wp("1%"),
@@ -296,34 +359,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#373fd4",
   },
-  variantsContainer: {
-    flexDirection: "row",
-    marginTop: hp("2%"),
-    gap: wp("2%"),
-  },
-  variantButton: {
-    paddingVertical: hp("1%"),
-    paddingHorizontal: wp("5%"),
-    backgroundColor: "#f0f0f0",
-    borderRadius: wp("2%"),
-  },
-  variantSelected: {
-    backgroundColor: "#373fd4",
-  },
-  variantText: {
-    fontSize: wp("4%"),
-    color: "#333",
-  },
-  variantButtonDisabled: {
-    paddingVertical: hp("1%"),
-    paddingHorizontal: wp("5%"),
-    backgroundColor: "#e0e0e0",
-    borderRadius: wp("2%"),
-  },
-  variantTextDisabled: {
-    fontSize: wp("4%"),
-    color: "#aaa",
-  },
   sectionTitle: {
     marginTop: hp("3%"),
     fontSize: wp("4.5%"),
@@ -335,42 +370,49 @@ const styles = StyleSheet.create({
     fontSize: wp("3.8%"),
     color: "#666",
   },
-  quantityContainer: {
+  variantsContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
     marginTop: hp("2%"),
     gap: wp("2%"),
   },
-  quantityButton: {
-    width: wp("15%"),
-    height: hp("5%"),
-    borderWidth: 1,
-    borderColor: "#ccc",
+  variantButton: {
+    paddingVertical: hp("1%"),
+    paddingHorizontal: wp("5%"),
+    backgroundColor: "#f0f0f0",
     borderRadius: wp("2%"),
-    alignItems: "center",
-    justifyContent: "center",
+    marginRight: wp("2%"),
   },
-  quantitySelected: {
+  variantSelected: {
     backgroundColor: "#373fd4",
-    borderColor: "#373fd4",
   },
-  quantityText: {
+  variantText: {
     fontSize: wp("4%"),
     color: "#333",
   },
-  customInput: {
+  quantityInputContainer: {
     marginTop: hp("2%"),
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  quantityInput: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: wp("2%"),
-    padding: wp("3%"),
+    padding: 10,
+    width: wp("30%"),
     fontSize: wp("4%"),
     color: "#333",
+    backgroundColor: "#fafafa",
   },
-  buttonContainer: {
+  footerFixed: {
     flexDirection: "row",
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    padding: 16,
     justifyContent: "space-between",
-    marginTop: hp("4%"),
+    alignItems: "center",
+    // Remove any absolute/fixed positioning!
   },
   addToCartButton: {
     flex: 1,
