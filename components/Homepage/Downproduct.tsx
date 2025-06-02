@@ -1,76 +1,84 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, SafeAreaView, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import { useNavigation } from "@react-navigation/native";
-type SpotlightProduct = {
-  id: string;
-  title: string;
-  image: string;
-  deliveryTime: string;
-  rating: number;
-  tags: string[];
-}[];
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import apiConfig from "../../api.json"; // Import the JSON file for API URL
 
 const Downproduct: React.FC = () => {
-    const navigation:any=useNavigation();
-  const handlecontinue = (): void => {
-    navigation.navigate("Products");
-}
-  const [spotlightData] = useState<SpotlightProduct>([
-    {
-      id: "1",
-      title: "Al Karamh Trading",
-      image:
-        "https://www.advancingnortheast.in/wp-content/uploads/2021/07/1408603089-1024x1024-1.jpg",
-      deliveryTime: "120 - 150 mins",
-      rating: 4.8,
-      tags: [
-        "Last 100 Orders Without Complaints",
-        "Bestseller",
-        "Frequently Reordered",
-      ],
-    },
-    {
-      id: "2",
-      title: "Al Karamh Trading",
-      image:
-        "https://www.advancingnortheast.in/wp-content/uploads/2021/07/1408603089-1024x1024-1.jpg",
-      deliveryTime: "120 - 150 mins",
-      rating: 4.8,
-      tags: [
-        "Last 100 Orders Without Complaints",
-        "Bestseller",
-        "Frequently Reordered",
-      ],
-    },
-  ]);
+  const navigation: any = useNavigation();
+  const [spotlightData, setSpotlightData] = useState<any[]>([]); // Use any[] to store original API data
+
+  const handleContinue = (product: any): void => {
+    navigation.navigate("ProductIndetail", {
+      product, // Pass the entire original product object
+    });
+  };
+
+  const fetchSpotlightProducts = async () => {
+    try {
+      const response = await axios.get(`${apiConfig.API_URL}/products`);
+      if (response.data.success) {
+        setSpotlightData(response.data.data); // Store the original data array
+      } else {
+        console.error("Failed to fetch spotlight products: ", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching spotlight products:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSpotlightProducts();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.sectionTitle}>IN THE SPOTLIGHT</Text>
-
       {spotlightData.map((product) => (
-        <TouchableOpacity onPress={handlecontinue} key={product.id} style={styles.card}>
-          <Image source={{ uri: product.image }} style={styles.image} />
+        <TouchableOpacity
+          onPress={() => handleContinue(product)} // Pass the original product object
+          key={product._id}
+          style={styles.card}
+        >
+          <View style={styles.imageContainer}>
+            <Image
+              source={{
+                uri: Array.isArray(product.image)
+                  ? product.image[0]
+                  : product.image,
+              }}
+              style={styles.image}
+              resizeMode="contain" // <-- This will fit the image
+            />
+            <View style={styles.rating}>
+              <Text style={styles.ratingText}>{product.rating ?? 4.8} ★</Text>
+            </View>
+          </View>
           {/* Delivery time */}
           <View style={styles.timeWrapper}>
-            <Text style={styles.timeText}>⏱ {product.deliveryTime}</Text>
+            <Text style={styles.timeText}>⏱ 120 - 150 mins</Text>
           </View>
           <View style={styles.content}>
-            <Text style={styles.title}>{product.title}</Text>
-            <View style={styles.rating}>
-              <Text style={styles.ratingText}>{product.rating} ★</Text>
-            </View>
+            <Text style={styles.title}>
+              {product.name?.en || product.title}
+            </Text>
+            <Text style={styles.categoryText}>{product.category}</Text>
+            <Text style={styles.priceText}>
+              {product.price ? `${product.price} QAR` : ""}
+            </Text>
             <View style={styles.tagsContainer}>
-              {product.tags.map((tag, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>✓ {tag}</Text>
-                </View>
-              ))}
+              {/* Optional: Render tags if present */}
             </View>
           </View>
         </TouchableOpacity>
@@ -99,6 +107,14 @@ const styles = StyleSheet.create({
     marginBottom: hp("2%"),
     position: "relative",
   },
+  imageContainer: {
+    width: "100%",
+    height: hp("24%"),
+    backgroundColor: "#f4f4f4",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
   image: {
     width: "100%",
     height: hp("24%"),
@@ -107,11 +123,8 @@ const styles = StyleSheet.create({
   timeWrapper: {
     position: "absolute",
     top: hp("22%"),
-    // left: wp("3%"),
     backgroundColor: "#ffffff",
     paddingVertical: hp("0.3%"),
-    // paddingHorizontal: wp("2%"),
-
     borderTopRightRadius: wp("9%"),
     width: wp("40%"),
     height: hp("5%"),
@@ -119,9 +132,7 @@ const styles = StyleSheet.create({
   timeText: {
     color: "#444",
     fontSize: hp("1.7%"),
-    // textAlign:"center",
     marginLeft: wp("1%"),
-    // justifyContent:"center",
   },
   content: {
     padding: wp("4%"),
@@ -132,6 +143,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#222",
     marginBottom: hp("1%"),
+  },
+  categoryText: {
+    fontSize: hp("1.7%"),
+    color: "#888",
+    marginBottom: hp("0.5%"),
+  },
+  priceText: {
+    fontSize: hp("2%"),
+    color: "#2A3B8F",
+    fontWeight: "bold",
+    marginBottom: hp("0.5%"),
   },
   tagsContainer: {
     flexDirection: "row",

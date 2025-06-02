@@ -174,11 +174,11 @@ const OrderHistoryScreen: React.FC = () => {
   );
 };
 
-// ...existing code...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5', // Light grey background
+    backgroundColor: '#f8f8f8',
+    paddingBottom: 80, // Add enough padding for the footer height
   },
   centeredView: {
     flex: 1,

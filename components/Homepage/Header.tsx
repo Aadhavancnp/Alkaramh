@@ -1,68 +1,44 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from "react-native";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-type Product = {
-  name: string;
-  imageurl: string;
-};
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import apiConfig from "../../api.json"; // Make sure this has your API_URL
 
 const Header = () => {
   const navigation: any = useNavigation();
-  const [products, setProducts] = useState<Product[]>([]);
-  const categories = ["All", "Feed", "Protein", "Salts"];
-  const handlecontinue = (): void => {
-    navigation.navigate("ProductIndetail");
-  };
+  const [categories, setCategories] = useState<any[]>([]);
+
   const handelseall = (): void => {
     navigation.navigate("Products");
   };
 
   useEffect(() => {
-    setProducts([
-      {
-        name: "Wheat",
-        imageurl:
-          "https://www.ulamart.com/pub/media/catalog/product/cache/7fbcc9caab5fbb2832d4dd01a9cbb8ed/t/h/thinai-min_optimized.png",
-      },
-      {
-        name: "Barley",
-        imageurl:
-          "https://www.ulamart.com/pub/media/catalog/product/cache/7fbcc9caab5fbb2832d4dd01a9cbb8ed/t/h/thinai-min_optimized.png",
-      },
-      {
-        name: "Millet",
-        imageurl:
-          "https://www.ulamart.com/pub/media/catalog/product/cache/7fbcc9caab5fbb2832d4dd01a9cbb8ed/t/h/thinai-min_optimized.png",
-      },
-      {
-        name: "Wheat",
-        imageurl:
-          "https://www.ulamart.com/pub/media/catalog/product/cache/7fbcc9caab5fbb2832d4dd01a9cbb8ed/t/h/thinai-min_optimized.png",
-      },
-      {
-        name: "Barley",
-        imageurl:
-          "https://www.ulamart.com/pub/media/catalog/product/cache/7fbcc9caab5fbb2832d4dd01a9cbb8ed/t/h/thinai-min_optimized.png",
-      },
-      {
-        name: "Millet",
-        imageurl:
-          "https://www.ulamart.com/pub/media/catalog/product/cache/7fbcc9caab5fbb2832d4dd01a9cbb8ed/t/h/thinai-min_optimized.png",
-      },
-    ]);
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${apiConfig.API_URL}/categories`);
+        if (Array.isArray(response.data)) {
+          setCategories(response.data);
+        } else if (Array.isArray(response.data.data)) {
+          setCategories(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
   }, []);
 
   return (
@@ -89,9 +65,9 @@ const Header = () => {
       </View>
       <View style={styles.starter}>
         <Text style={{ fontWeight: "700" }}>Explore Categories</Text>
-          <TouchableOpacity onPress={handelseall}>
-            <Text style={{ color: "blue" }}>See All</Text>
-          </TouchableOpacity>
+        <TouchableOpacity onPress={handelseall}>
+          <Text style={{ color: "blue" }}>See All</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -99,14 +75,22 @@ const Header = () => {
         showsHorizontalScrollIndicator={false}
         style={styles.productRow}
       >
-        {products.map((product, index) => (
-          <View key={index} style={styles.productItem}>
+        {categories.map((category, index) => (
+          <TouchableOpacity
+            key={category._id || index}
+            style={styles.productItem}
+            onPress={() =>
+              navigation.navigate("Products", { category: category.name?.en })
+            }
+          >
             <Image
-              source={{ uri: product.imageurl }}
+              source={{ uri: category.image }}
               style={styles.productImage}
             />
-            <Text style={styles.categoryText}>{product.name}</Text>
-          </View>
+            <Text style={styles.categoryText}>
+              {category.name?.en || "No Name"}
+            </Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
