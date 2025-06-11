@@ -40,3 +40,4 @@ app-example
 
 *.lock
 package-lock.json
+config.bat

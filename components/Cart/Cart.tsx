@@ -70,9 +70,9 @@ const Cart = () => {
     const fetchCartItems = async () => {
       try {
         // Try to get userId from context, fallback to AsyncStorage
-        let userId = user?._id;
+        let userId: string | undefined = user?._id;
         if (!userId) {
-          userId = await AsyncStorage.getItem("userId");
+          userId = await AsyncStorage.getItem("userId") ?? undefined;
         }
         if (!userId) {
           setError("User ID is missing. Please login.");
@@ -321,12 +321,12 @@ const Cart = () => {
                     {/* <Text style={styles.cartDesc} numberOfLines={2}>
                       {item.product.description.en}
                     </Text> */}
-                    <View style={styles.cartRow}>
+                    {/* <View style={styles.cartRow}>
                       <Text style={styles.cartLabel}>Category:</Text>
                       <Text style={styles.cartValue}>
-                        {item.product.category}
+                        {item.product.category} 
                       </Text>
-                    </View>
+                    </View> */}
                     <View style={styles.cartRow}>
                       <Text style={styles.cartLabel}>Price:</Text>
                       <Text style={styles.cartPrice}>
