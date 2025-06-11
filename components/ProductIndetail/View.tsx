@@ -1,286 +1,186 @@
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { RouteProp, useRoute } from "@react-navigation/native";
-import axios from "axios";
-import * as React from "react";
+import React, { useState } from "react";
 import {
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  TextInput,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import apiConfig from "../../api.json";
+import { useNavigation } from "expo-router";
 
-type Variant = "10kg" | "20kg" | "30kg";
+const ProductDetails = () => {
+  const [customModalVisible, setCustomModalVisible] = useState(false);
+  const [customQty, setCustomQty] = useState('');
 
-interface Product {
-  _id: string;
-  name?: { en: string; ar?: string };
-  title?: string;
-  description?: { en: string; ar?: string } | string;
-  price: number;
-  image: string[] | string;
-  category?: string;
-  stock?: number;
-  rating?: number;
-}
+  const navigation = useNavigation();
+  const [selectedVariant, setSelectedVariant] = useState("10 kg");
+  const [isFavorite, setIsFavorite] = useState(false);
 
-type ProductDetailsRouteParams = {
-  product: Product | Product[];
-};
-const VARIANTS: Variant[] = ["10kg", "20kg", "30kg"];
+  const variants = ["10 kg", "20 kg", "30 kg"];
 
-const ProductDetails: React.FC = () => {
-  const route =
-    useRoute<RouteProp<{ params: ProductDetailsRouteParams }, "params">>();
-  // Support array or single product
-  const productParam = route.params?.product;
-  const product = Array.isArray(productParam) ? productParam[0] : productParam;
-  console.log(
-    "ProductDetailsRouteParams",
-    JSON.stringify(route.params, null, 2)
-  );
+  const renderStars = (rati:any) => {
+    const fullStars = Math.floor(rati);
+    const hasHalfStar = rati % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    const [customModalVisible, setCustomModalVisible] = useState(false);
+    const [customQty, setCustomQty] = useState('');
 
-  const [selectedVariant, setSelectedVariant] = React.useState<Variant>("10kg");
-  const [quantity, setQuantity] = React.useState<string>("1");
-  const [lang, setLang] = React.useState<"en" | "ar">("en");
-  const [addingToCart, setAddingToCart] = React.useState(false);
 
-  if (!product) {
-    return (
-      <View style={styles.centered}>
-        <Text>No product data available.</Text>
-      </View>
-    );
-  }
+    const stars = [];
 
-  // Support both array and string for image
-  const productImage =
-    Array.isArray(product.image) && product.image.length > 0
-      ? product.image[0]
-      : typeof product.image === "string"
-      ? product.image
-      : "https://via.placeholder.com/300";
-
-  // Support both name/title and description structures, with language toggle
-  const productTitle =
-    (typeof product.name === "object" && product.name?.[lang]) ||
-    product.title ||
-    "No Title";
-  const productDescription =
-    typeof product.description === "string"
-      ? product.description
-      : (product.description?.[lang] as string) ||
-        "No description available for this product.";
-
-  // Price fallback
-  const productPrice =
-    typeof product.price === "number" && !isNaN(product.price)
-      ? product.price
-      : "N/A";
-
-  const handleAddToCart = async () => {
-    setAddingToCart(true);
-    try {
-      const userId = await AsyncStorage.getItem("userId");
-      if (!userId) {
-        alert("Please login to add items to your cart.");
-        setAddingToCart(false);
-        return;
-      }
-      console.log("Data requested for add to cart:", {
-        userId,
-        productid: product._id,
-        quantity: Number(quantity) || 1,
-        price: Number(productPrice) * Number(quantity),
-      });
-      const response = await axios.post(
-        `${apiConfig.API_URL}/cart/add`,
-        {
-          userId,
-          productId: product._id,
-          quantity: Number(quantity) || 1,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Ionicons key={`full-${i}`} name="star" size={18} color="#FFD700" />
       );
-      console.log(
-        "Add to cart response:",
-        JSON.stringify(response.data, null, 2)
-      );
-      if (response.data && response.data.success) {
-        alert(response.data.message || "Added to cart successfully!");
-      } else {
-        alert(response.data.message || "Failed to add to cart.");
-      }
-    } catch (err: any) {
-      alert(
-        err.response?.data?.message ||
-          err.message ||
-          "An error occurred while adding to cart."
-      );
-    } finally {
-      setAddingToCart(false);
     }
+    if (hasHalfStar) {
+      stars.push(
+        <Ionicons key={`half`} name="star-half" size={18} color="#FFD700" />
+      );
+    }
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <Ionicons key={`empty-${i}`} name="star-outline" size={18} color="#FFD700" />
+      );
+    }
+
+    return stars;
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    <SafeAreaView style={styles.safe}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1 }}>
-            <ScrollView
-              style={styles.container}
-              contentContainerStyle={{ paddingBottom: 140 }} // Make room for footer
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* Product Image */}
-              <Image
-                source={{
-                  uri: productImage,
-                }}
-                style={styles.productImage}
-                resizeMode="contain"
+        <View style={styles.header}>
+          <Ionicons name="chevron-back" size={24} onPress={() => navigation.goBack()} />
+          <Text style={styles.headerTitle}>Product details</Text>
+        </View>
+
+        <View style={styles.imageContainer}>
+          <Image
+            source={require("../../assets/g-wheat.png")}
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+          <TouchableOpacity style={styles.shareIcon}>
+            <Ionicons name="share-social-outline" size={20} color="#000" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.titleRow}>
+            <Text style={styles.productTitle}>Wheat Straw – 6kg</Text>
+            <TouchableOpacity onPress={() => setIsFavorite(!isFavorite)}>
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={24}
+                color={isFavorite ? "red" : "#888"}
               />
-
-              <View style={styles.toggleContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.toggleButton,
-                    lang === "en" && styles.toggleSelected,
-                  ]}
-                  onPress={() => setLang("en")}
-                >
-                  <Text
-                    style={
-                      lang === "en"
-                        ? styles.toggleTextSelected
-                        : styles.toggleText
-                    }
-                  >
-                    EN
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.toggleButton,
-                    lang === "ar" && styles.toggleSelected,
-                  ]}
-                  onPress={() => setLang("ar")}
-                >
-                  <Text
-                    style={
-                      lang === "ar"
-                        ? styles.toggleTextSelected
-                        : styles.toggleText
-                    }
-                  >
-                    AR
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Product Title */}
-              <View style={styles.titleContainer}>
-                <Text style={styles.title}>{productTitle}</Text>
-                <TouchableOpacity>
-                  <Ionicons name="heart-outline" size={24} color="#888" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Rating and Price */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: hp("1%"),
-                }}
-              >
-                <Ionicons name="star" size={wp("4.5%")} color="#f5c518" />
-                <Text style={styles.ratingText}>{product.rating ?? 4.5} ★</Text>
-                <Text style={styles.reviewText}>(1.24K Reviews)</Text>
-              </View>
-              <Text style={styles.priceText}>{productPrice} QAR</Text>
-
-              {/* Variants */}
-              <Text style={styles.sectionTitle}>Variants</Text>
-              <View style={styles.variantsContainer}>
-                {VARIANTS.map((variant) => (
-                  <TouchableOpacity
-                    key={variant}
-                    style={[
-                      styles.variantButton,
-                      selectedVariant === variant && styles.variantSelected,
-                    ]}
-                    onPress={() => setSelectedVariant(variant)}
-                  >
-                    <Text
-                      style={[
-                        styles.variantText,
-                        selectedVariant === variant && { color: "#fff" },
-                      ]}
-                    >
-                      {variant}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* Description */}
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.descriptionText}>{productDescription}</Text>
-
-              {/* Quantity */}
-              <Text style={styles.sectionTitle}>Choose Quantity</Text>
-              <View style={styles.quantityInputContainer}>
-                <TextInput
-                  style={styles.quantityInput}
-                  keyboardType="numeric"
-                  value={quantity}
-                  onChangeText={setQuantity}
-                  placeholder="Enter quantity"
-                  maxLength={4}
-                  returnKeyType="done"
-                />
-              </View>
-            </ScrollView>
-            {/* Footer always visible, not overlapping */}
-            <View style={styles.footerFixed}>
-              <TouchableOpacity
-                style={styles.addToCartButton}
-                onPress={handleAddToCart}
-                disabled={addingToCart}
-              >
-                <Text style={styles.buttonText}>
-                  {addingToCart ? "Adding..." : "Add to cart"}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buyNowButton}>
-                <Text style={[styles.buttonText, { color: "#fff" }]}>
-                  Buy Now
-                </Text>
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+
+          <View style={styles.ratingRow}>
+            <View style={styles.starRow}>{renderStars(4.5)}</View>
+            <Text style={styles.ratingValue}>4.5</Text>
+            <Text style={styles.ratingCount}>(1.24K Reviews)</Text>
+          </View>
+
+          <Text style={styles.price}>12 QAR</Text>
+
+          <Text style={styles.sectionTitle}>Variants</Text>
+          <View style={styles.variantRow}>
+            {variants.map((variant) => (
+              <TouchableOpacity
+                key={variant}
+                onPress={() => setSelectedVariant(variant)}
+                style={[
+                  styles.variantButton,
+                  selectedVariant === variant && styles.variantSelected,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.variantText,
+                    selectedVariant === variant && styles.variantTextSelected,
+                  ]}
+                >
+                  {variant}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.description}>
+            Al Karamh is renowned for its high-quality products. This product
+            showcases their dedication to excellence. Customers trust Al Karamh
+            for reliable and superior goods.
+          </Text>
+
+        
+          <Text style={styles.sectionTitle}>Choose Quantity</Text>
+          <View style={styles.quantityRow}>
+          {["10", "20", "30", "40"].map((qty) => (
+          <TouchableOpacity key={qty} style={styles.quantityButton} onPress={() => console.log(`Selected quantity: ${qty}`)}>
+                <Text style={styles.quantityText}>{qty}</Text>
+          </TouchableOpacity>
+          ))}
+        <TouchableOpacity
+  style={styles.customButton}
+  onPress={() => setCustomModalVisible(true)}
+>
+  <Text style={styles.customText}>Custom</Text>
+</TouchableOpacity>
+
+</View>
+        </View>
+      </ScrollView>
+        {customModalVisible && (
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>Custom quantity</Text>
+      <TextInput
+        style={styles.modalInput}
+        placeholder="Enter custom quantity"
+        keyboardType="numeric"
+        value={customQty}
+        onChangeText={setCustomQty}
+      />
+      <View style={styles.modalButtons}>
+        
+        <TouchableOpacity
+          style={styles.modalButtonPrimary}
+          onPress={() => {
+            setCustomModalVisible(false);
+            // Save or use customQty here
+            console.log("Custom quantity entered:", customQty);
+          }}
+        >
+          <Text style={styles.modalButtonTextPrimary}>Add to cart</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+)}
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.cartButton}>
+          <Text style={styles.cartButtonText}>Add to cart</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.buyButton}>
+          <Text style={styles.buyButtonText}>Buy Now</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -288,153 +188,249 @@ const ProductDetails: React.FC = () => {
 export default ProductDetails;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#fff",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
+  safe: { flex: 1, backgroundColor: "#fff" },
+  container: { paddingBottom: hp("20%") },
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-    padding: wp("5%"),
+    padding: wp("4%"),
+  },
+  headerTitle: {
+    fontSize: hp("2.3%"),
+    fontWeight: "600",
+    marginLeft: wp("2%"),
+  },
+  imageContainer: {
+    position: "relative",
+    alignItems: "center",
+    paddingHorizontal: wp("4%"),
+    backgroundColor: "#F5F6FB",
   },
   productImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 16,
-    backgroundColor: "#f5f5f5",
+    width: wp("70%"),
+    height: hp("25%"),
+    borderRadius: 12,
   },
-  toggleContainer: {
-    flexDirection: "row",
-    alignSelf: "flex-end",
-    marginBottom: 8,
-    marginTop: -8,
+  shareIcon: {
+    position: "absolute",
+    top: 10,
+    right: 20,
+    backgroundColor: "#f4f4f4",
+    borderRadius: 20,
+    padding: 8,
   },
-  toggleButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginLeft: 4,
-    backgroundColor: "#f0f0f0",
+  content: {
+    paddingHorizontal: wp("5%"),
   },
-  toggleSelected: {
-    backgroundColor: "#373fd4",
-  },
-  toggleText: {
-    color: "#373fd4",
-    fontWeight: "bold",
-  },
-  toggleTextSelected: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  titleContainer: {
+  titleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: hp("2%"),
   },
-  title: {
-    fontSize: wp("5%"),
-    fontWeight: "bold",
-    color: "#333",
-    flex: 1,
-    marginRight: 8,
-  },
-  ratingText: {
-    marginLeft: wp("1%"),
-    fontSize: wp("4%"),
+  productTitle: {
+    fontSize: hp("2.3%"),
     fontWeight: "600",
-    color: "#333",
   },
-  reviewText: {
-    marginLeft: wp("2%"),
-    fontSize: wp("3.5%"),
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+  },
+  starRow: {
+    flexDirection: "row",
+    marginRight: 6,
+  },
+  ratingValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginHorizontal: 4,
+  },
+  ratingCount: {
+    fontSize: 14,
     color: "#777",
   },
-  priceText: {
+  price: {
     marginTop: hp("1%"),
-    fontSize: wp("5%"),
+    color: "#2731d2",
+    fontSize: hp("2.2%"),
     fontWeight: "bold",
-    color: "#373fd4",
   },
   sectionTitle: {
-    marginTop: hp("3%"),
-    fontSize: wp("4.5%"),
-    fontWeight: "bold",
-    color: "#333",
+    marginTop: hp("2.5%"),
+    fontSize: hp("2%"),
+    fontWeight: "500",
   },
-  descriptionText: {
-    marginTop: hp("1%"),
-    fontSize: wp("3.8%"),
-    color: "#666",
-  },
-  variantsContainer: {
+  variantRow: {
     flexDirection: "row",
-    marginTop: hp("2%"),
-    gap: wp("2%"),
+    marginTop: hp("1%"),
+    gap: 10,
   },
   variantButton: {
     paddingVertical: hp("1%"),
-    paddingHorizontal: wp("5%"),
-    backgroundColor: "#f0f0f0",
-    borderRadius: wp("2%"),
-    marginRight: wp("2%"),
-  },
-  variantSelected: {
-    backgroundColor: "#373fd4",
-  },
-  variantText: {
-    fontSize: wp("4%"),
-    color: "#333",
-  },
-  quantityInputContainer: {
-    marginTop: hp("2%"),
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  quantityInput: {
+    paddingHorizontal: wp("4%"),
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: wp("2%"),
-    padding: 10,
-    width: wp("30%"),
-    fontSize: wp("4%"),
+    borderRadius: 10,
+  },
+  variantSelected: {
+    backgroundColor: "#283593",
+    borderColor: "#283593",
+  },
+  variantText: {
+    fontSize: hp("1.9%"),
     color: "#333",
-    backgroundColor: "#fafafa",
   },
-  footerFixed: {
+  variantTextSelected: {
+    color: "#fff",
+  },
+  description: {
+    marginTop: hp("1%"),
+    color: "#444",
+    lineHeight: 22,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "#fff",
     flexDirection: "row",
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    padding: 16,
     justifyContent: "space-between",
-    alignItems: "center",
-    // Remove any absolute/fixed positioning!
+    padding: wp("4%"),
+    borderTopWidth: 1,
+    borderColor: "#eee",
   },
-  addToCartButton: {
+  cartButton: {
     flex: 1,
-    marginRight: wp("2%"),
-    backgroundColor: "#fff",
-    borderColor: "#373fd4",
     borderWidth: 1,
+    borderColor: "#283593",
     paddingVertical: hp("1.5%"),
-    borderRadius: wp("2%"),
+    borderRadius: 10,
+    marginRight: wp("2%"),
     alignItems: "center",
   },
-  buyNowButton: {
+  cartButtonText: {
+    color: "#2731d2",
+    fontWeight: "600",
+    fontSize: hp("2%"),
+  },
+  buyButton: {
     flex: 1,
-    marginLeft: wp("2%"),
-    backgroundColor: "#373fd4",
+    backgroundColor: "#283593",
     paddingVertical: hp("1.5%"),
-    borderRadius: wp("2%"),
+    borderRadius: 10,
     alignItems: "center",
   },
-  buttonText: {
-    fontSize: wp("4%"),
-    fontWeight: "bold",
-    color: "#000000",
-  },
+  buyButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: hp("2%"),
+  },quantityRow: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 10,
+  marginTop: hp("1%"),
+},
+
+quantityButton: {
+  paddingVertical: hp("1%"),
+  paddingHorizontal: wp("5%"),
+  borderRadius: 10,
+  backgroundColor: "#F2F2F7",
+},
+
+quantityText: {
+  fontSize: hp("1.9%"),
+  color: "#8E8E93",
+  fontWeight: "500",
+},
+
+customButton: {
+  paddingVertical: hp("1%"),
+  paddingHorizontal: wp("5%"),
+  borderRadius: 10,
+  backgroundColor: "#F2F2F7",
+},
+
+customText: {
+  fontSize: hp("1.9%"),
+  color: "#8E8E93",
+  fontWeight: "500",
+},
+modalOverlay: {
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 10,
+},
+
+modalContent: {
+  width: "80%",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 12,
+  padding: 20,
+  height:'20%',
+  alignItems: "flex-start",
+},
+
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "500",
+  marginBottom: 12,
+},
+
+modalInput: {
+  width: "100%",
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 10,
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  fontSize: 16,
+  marginBottom: 16,
+},
+
+modalButtons: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "50%",
+},
+
+modalButton: {
+  marginLeft: wp("50%"),
+  flex: 1,
+  padding: 10,
+  marginRight: 5,
+  backgroundColor: "#283593",
+  borderRadius: 8,
+  alignItems: "center",
+},
+
+modalButtonPrimary: {
+  flex: 1,
+  padding: 10,
+  marginLeft: 1,
+  backgroundColor: "#283593",
+  borderRadius: 8,
+  alignItems: "center",
+  justifyContent: "center",
+
+},
+
+modalButtonText: {
+  color: "#333",
+  fontWeight: "500",
+},
+
+modalButtonTextPrimary: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
+
 });

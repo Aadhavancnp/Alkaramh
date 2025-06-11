@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+
 import {
   Image,
   ScrollView,
@@ -47,13 +48,13 @@ const Header = () => {
         name="search"
         color={"#000000"}
         size={20}
-        style={{ position: "relative", top: hp("4.3%"), left: wp("2%") }}
+        style={{ position: "relative", top: hp("4.3%"), left: wp("4%") }}
       />
       <View style={styles.headertop}>
         <View style={styles.inputfield}>
           <TextInput
             style={styles.searchInput}
-            placeholder="     Search deals, products & more..."
+            placeholder="Search deals, products & more..."
             placeholderTextColor="#888"
           />
         </View>
@@ -66,7 +67,7 @@ const Header = () => {
       <View style={styles.starter}>
         <Text style={{ fontWeight: "700" }}>Explore Categories</Text>
         <TouchableOpacity onPress={handelseall}>
-          <Text style={{ color: "blue" }}>See All</Text>
+          <Text style={{ color: "#283593" }}>See all</Text>
         </TouchableOpacity>
       </View>
 
@@ -100,14 +101,13 @@ const Header = () => {
 const styles = StyleSheet.create({
   container: {
     padding: hp("2%"),
-    marginTop: hp("5%"),
+    marginTop: hp("-4%"),
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
   headertop: {
     flexDirection: "row",
-    // paddingTop:hp("5%")
   },
   inputfield: {
     width: wp("80%"),
@@ -117,7 +117,8 @@ const styles = StyleSheet.create({
     borderRadius: hp("1%"),
     borderColor: "black",
     borderWidth: 0.2,
-    paddingHorizontal: wp("5%"),
+    paddingHorizontal: wp("10%"),
+  
     fontSize: hp("2%"),
   },
   starter: {

@@ -21,6 +21,7 @@ import {
 } from "react-native-responsive-screen";
 import apiConfig from "../../api.json";
 import AuthContext from "../../context/AuthContext"; // Import AuthContext
+import Footer from "@/Utils/Footer/Footer";
 
 // Define an interface for the product within a cart item
 interface Product {
@@ -416,6 +417,7 @@ const Cart = () => {
           </View>
         </Modal>
       </View>
+      <Footer/>
     </SafeAreaView>
   );
 };

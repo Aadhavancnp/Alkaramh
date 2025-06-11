@@ -5,13 +5,14 @@ import React, { useContext, useState } from "react"; // Import useContext
 import {
   ActivityIndicator,
   Alert,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { Button } from "react-native-paper";
 import {
@@ -21,7 +22,7 @@ import {
 import apiConfig from "../../api.json";
 import AuthContext from "../../context/AuthContext"; // Import AuthContext
 
-const AuthScreen = () => {
+const AuthScreens = () => {
   const navigation: any = useNavigation();
   const authContext = useContext(AuthContext);
 
@@ -216,7 +217,7 @@ const AuthScreen = () => {
   );
 };
 
-export default AuthScreen;
+// export default AuthScreen;
 const styles = StyleSheet.create({
   safeContainer: {
     marginTop: hp("8%"), // Adjusted margin for more space
@@ -309,3 +310,229 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+
+const translations = {
+  English: {
+    title: "Let's start with your\nmobile number",
+    placeholder: "Enter your mobile number",
+    subtext: "We will send you a text message",
+    continue: "Continue",
+    or: "OR",
+    google: "Continue with Google",
+    apple: "Continue with Apple",
+    footer: "By continuing, you automatically accept our\nTerms & Conditions, Privacy Policy, and Cookies Policy.",
+    switchLang: "عربي"
+  },
+  Arabic: {
+    title: "لنبدأ برقم\nالهاتف الخاص بك",
+    placeholder: "أدخل رقم هاتفك المحمول",
+    subtext: "سوف نرسل لك رسالة نصية",
+    continue: "استمرار",
+    or: "أو",
+    google: "تابع مع جوجل",
+    apple: "تابع مع أبل",
+    footer: "من خلال الاستمرار، فإنك توافق تلقائيًا على\nالشروط والأحكام وسياسة الخصوصية وسياسة ملفات تعريف الارتباط.",
+    switchLang: "English"
+  }
+};
+
+const AuthScreen = () => {
+  const [isLoginMode, setIsLoginMode] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const [phone, setPhone] = useState('');
+  const navigation: any = useNavigation();
+  const [language, setLanguage] = useState<'English' | 'Arabic'>('Arabic');
+
+  const t = translations[language];
+  const Handleotp = () =>{
+    setIsLoginMode(true);
+    navigation.navigate("otp",{'lang':language});
+    setIsLoading(false);
+  }
+  const toggleLanguage = () => {
+    setLanguage(prev => (prev === 'English' ? 'Arabic' : 'English'));
+  };
+
+  return (
+    <View style={styless.container}>
+      <TouchableOpacity onPress={toggleLanguage} style={styless.langSwitch}>
+        <Text style={styless.langText}>{t.switchLang}</Text>
+      </TouchableOpacity>
+
+      <Text style={styless.title}>{t.title}</Text>
+
+      <View style={styless.inputRow}>
+        <View style={styless.codeBox}>
+          <Text style={styless.codeText}>+974</Text>
+        </View>
+        <TextInput
+          style={styless.input}
+          placeholder={t.placeholder}
+          keyboardType="phone-pad"
+          value={phone}
+          onChangeText={setPhone}
+        />
+      </View>
+
+      <Text style={styless.subtext}>{t.subtext}</Text>
+
+      <Button
+        mode="contained"
+        style={styless.continueButton}
+        onPress={Handleotp}
+      >
+        {t.continue}
+      </Button>
+
+      <View style={styless.orContainer}>
+        <View style={styless.line} />
+        <Text style={styless.orText}>{t.or}</Text>
+        <View style={styless.line} />
+      </View>
+
+      <TouchableOpacity style={styless.socialButton}>
+        <Image
+          source={require('./../../assets/google.png')}
+          style={styless.logo}
+        />
+        <Text style={styless.socialText}>{t.google}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styless.socialButton}>
+        <Image
+          source={require('./../../assets/apple.png')}
+          style={styless.applelogo}
+        />
+        <Text style={styless.socialText}>{t.apple}</Text>
+      </TouchableOpacity>
+
+      <Text style={styless.footer}>{t.footer}</Text>
+    </View>
+  );
+};
+
+
+
+export default AuthScreen;
+const styless = StyleSheet.create({
+    container: {
+      padding:hp("3%"),
+     // width:wp("95%"),
+      backgroundColor: "#fff",
+      height: hp("100%"),
+
+    },
+  
+    logo:{
+      width:wp('7%'),
+      height:wp('7%')
+
+    },
+    applelogo:{
+      width:wp('8%'),
+      height:wp('8%')
+
+    },langSwitch: {
+    alignSelf: 'flex-end',
+    marginRight: wp('0'),
+    marginTop:15
+},
+    langText: {
+      padding:wp('1.5%'),
+      borderRadius:10,
+      borderWidth:1,
+      fontSize: 16,
+      color: '#1A237E',
+},
+
+    title: {
+      fontSize: wp("8%"),
+      marginTop: hp("9%"),
+      fontWeight: "400",
+      color: "#1A237E",
+      marginBottom: hp("6%"),
+    },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#ffffff",
+      borderRadius: wp("2%"),
+      //paddingHorizontal: wp("3%"),
+      marginBottom: hp("1%"),
+      borderColor: "#ddd",
+     // borderWidth: 1,
+    },
+    codeBox: {
+      paddingRight: wp("2.5%"),
+      padding:wp("2.5"),
+      borderWidth:wp(".4"),
+      borderRadius:wp("2"),
+    //  borderRightWidth: 1,
+      borderColor: "#ccc",
+      marginRight:wp("2")
+    },
+    codeText: {
+      fontSize: wp("4%"),
+      color: "#1A237E",
+    },
+    input: {
+      flex: 1,
+      padding:wp("2.5"),
+      fontSize: wp("4%"),
+      borderWidth:wp(".4"),
+      color: "#000",
+      borderColor: "#ccc",
+      borderRadius:wp("2")
+    },
+    subtext: {
+      fontSize: wp("3.5%"),
+      color: "#888",
+      marginBottom: hp("2%"),
+    },
+    continueButton: {
+      backgroundColor: "#303F9F",
+      paddingVertical: hp(".25%"),
+      marginTop: hp("1.5%"),
+      borderRadius: wp("2%"),
+    },
+    orContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginVertical: hp("4%"),
+    },
+    orText: {
+      marginHorizontal: wp("3%"),
+      color: "#aaa",
+      fontSize: wp("3.5%"),
+    },
+    line: {
+      flex: 1,
+      height: 1,
+      backgroundColor: "#ddd",
+    },
+    socialButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent:'center',
+      borderColor: "#ccc",
+      borderWidth: 1,
+      borderRadius: wp("2%"),
+      padding: hp("1.5%"),
+      marginBottom: hp("3%"),
+    },
+    socialText: {
+
+      fontSize: wp("4%"),
+      marginLeft: wp("2.5%"),
+    },
+    footer: {
+      fontSize: wp("3%"),
+      color: "#888",
+      marginTop: hp("10%"),
+    },
+  });
+  
+
+

@@ -78,6 +78,7 @@ const Downproduct: React.FC = () => {
               {product.price ? `${product.price} QAR` : ""}
             </Text>
             <View style={styles.tagsContainer}>
+              
               {/* Optional: Render tags if present */}
             </View>
           </View>
@@ -90,6 +91,7 @@ const Downproduct: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    margin:wp("3%"),
     padding: wp("4%"),
     backgroundColor: "#ffffff",
   },
@@ -100,12 +102,14 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: wp("4%"),
+    backgroundColor: "#fffff",
+    borderRadius: wp("5%"),
+  //  alignSelf:'center',
     overflow: "hidden",
     elevation: 4,
     marginBottom: hp("2%"),
     position: "relative",
+    padding:wp("5%")
   },
   imageContainer: {
     width: "100%",

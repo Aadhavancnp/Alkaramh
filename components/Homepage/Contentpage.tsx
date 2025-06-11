@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -30,7 +30,37 @@ const handelseall = (): void => {
       name: "Sample Product",
       rating: "4.7★",
       price: "QAR 66",
-      image: "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_2.jpg",
+      image: "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_1.jpg",
+      category: "Electronics",
+      description: { ar: "وصف المنتج", en: "Product description" },
+      stock: 74
+    },
+    {
+      id: "2",
+      name: "Sample Product 2 ",
+      rating: "4.7★",
+      price: "QAR 66",
+      image: "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_1.jpg",
+      category: "Electronics",
+      description: { ar: "وصف المنتج", en: "Product description" },
+      stock: 74
+    },
+    {
+      id: "3",
+      name: "Sample Product 3 ",
+      rating: "4.7★",
+      price: "QAR 66",
+      image: "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_1.jpg",
+      category: "Electronics",
+      description: { ar: "وصف المنتج", en: "Product description" },
+      stock: 74
+    },
+    {
+      id: "4",
+      name: "Sample Product 4 ",
+      rating: "4.7★",
+      price: "QAR 66",
+      image: "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_1.jpg",
       category: "Electronics",
       description: { ar: "وصف المنتج", en: "Product description" },
       stock: 74
@@ -60,7 +90,7 @@ const handelseall = (): void => {
         name: item.name.en, // Using English name
         rating: "4.7★", // Default rating since not in API
         price: `QAR ${item.price}`,
-        image: item.image[0] || "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_2.jpg",
+        image: item.image[0] || "https://vatsanfoods.com/adminln/uploads/product-images/1655987267_Jowar_-_Red_1.jpg",
         category: item.category,
         description: {
           ar: item.description.ar,
@@ -105,9 +135,9 @@ const handelseall = (): void => {
         </ScrollView>
       </View>
       <View style={styles.starter}>
-        <Text style={{ fontWeight: "700" }}>Recomended Products</Text>
+        <Text style={{ fontWeight: "70" }}>RECOMMENDED FOR YOU</Text>
         <TouchableOpacity onPress={(handelseall)}>
-          <Text style={{ color: "blue" }}>See All</Text>
+          <Text style={{ color: "#283593" }}>See All</Text>
         </TouchableOpacity>
       </View>
       <ScrollView
@@ -136,9 +166,7 @@ const handelseall = (): void => {
             <Text style={styles.productPrice}>{product.price}</Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity style={styles.seeAllButton}>
-          <Text style={styles.seeAllText}>See all</Text>
-        </TouchableOpacity>
+       
       </ScrollView>
     </ScrollView>
   );
@@ -221,12 +249,13 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: "bold",
+    
     marginBottom: 4,
     color: "#333",
   },
   productPrice: {
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: "bold",
     color: "#333",
   },
   seeAllButton: {

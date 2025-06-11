@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import OTPTextInput from 'react-native-otp-textinput';
@@ -6,8 +6,30 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-const Otp = () => {
-    const navigation:any=useNavigation();
+ const translations = {
+    English : {
+      firsttext:'Please check your Email or phone',
+      secondtext:'We have sent the code to +974XXXXXX3344',
+      otpresendtext:'Send code again',
+      verifytext:'Verify',
+      switchLang: "عربي"
+
+    },
+    Arabic:{
+      firsttext:'يرجى التحقق من بريدك الإلكتروني أو هاتفك',
+      secondtext:'لقد أرسلنا الرمز إلى +XXXXX3344',
+      otpresendtext:'أرسل الرمز مرة أخرى',
+      verifytext:'يؤكد',
+      switchLang: "English"
+    }
+  };
+  const Otp = () => {
+  const route = useRoute(); 
+  const  {lang}= route.params || { lang: 'English' };
+  const t = translations[lang];
+
+  
+  const navigation:any=useNavigation();
   const otpInput = useRef<any>(null);
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -43,18 +65,18 @@ const handleverify=():void=>{
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
-        <Text style={styles.firsttext}>Please check your Email or phone</Text>
+        <Text style={styles.firsttext}>{t.firsttext}</Text>
         <Text style={styles.secondtext}>
-          We have sent the code to +91XXXXXX3344
+        {t.secondtext}
         </Text>
         <View style={styles.otpfield}>
           <OTPTextInput
             ref={otpInput}
             handleTextChange={handleChange}
-            inputCount={4}
+            inputCount={5}
             tintColor="#555"
             offTintColor="#ccc"
-            containerStyle={{ justifyContent: "space-between" }}
+           containerStyle={{ justifyContent: "space-between" }}
             textInputStyle={styles.otpbox}
           />
         </View>
@@ -62,17 +84,17 @@ const handleverify=():void=>{
         <View style={styles.otresendsection}>
           {canResend ? (
             <TouchableOpacity onPress={handleResend}>
-              <Text style={styles.otpresendtext}>Resend Code</Text>
+              <Text style={styles.otpresendtext}>{t.otpresendtext}</Text>
             </TouchableOpacity>
           ) : (
-            <Text style={styles.timertext}>Resend in {timer}s</Text>
+            <Text style={styles.timertext}>{t.otpresendtext} {timer}s</Text>
           )}
         </View>
       </View>
 
       <View style={styles.verifycontainer}>
         <TouchableOpacity style={styles.verifybutton} onPress={handleverify}>
-          <Text style={styles.verifytext}>Verify</Text>
+          <Text style={styles.verifytext}>{t.verifytext}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -90,30 +112,32 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     gap: hp("2%"),
-    marginTop: hp("5%"),
+    marginTop: hp("7%"),
   },
   firsttext: {
     fontSize: wp("5.5%"),
-    fontWeight: "bold",
+    fontWeight: "400",
     color: "#030518",
   },
   secondtext: {
-    fontSize: wp("4%"),
+    fontSize: wp("3.3%"),
     color: "#555",
   },
   otpfield: {
+    paddingTop:wp('5%'),
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent:'center',
+   
   },
   otpbox: {
-    width: wp("15%"),
+   // width: wp("15%"),
     borderWidth: 1,
     borderColor: "#999",
     textAlign: "center",
     fontSize: wp("5%"),
     borderRadius: wp("2%"),
-    marginLeft: wp("5%"),
+  //  marginLeft: wp("5%"),
   },
 
   verifycontainer: {
@@ -121,7 +145,7 @@ const styles = StyleSheet.create({
     marginTop: hp("5%"),
   },
   verifybutton: {
-    backgroundColor: "#2d46eb",
+    backgroundColor: "#283593",
     padding:hp('1%'),
     borderRadius:wp('3'),
     paddingTop:hp('2%'),
@@ -136,13 +160,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   otpresendtext: {
-    color: "#1E90FF",
-    fontWeight: "600",
+    color: "#00000",
+    fontWeight:'400',
     fontSize: wp("4%"),
     textAlign: "center",
   },
   timertext: {
-    color: "#555",
+    color: "#000000",
     fontSize: wp("4%"),
   },
 });

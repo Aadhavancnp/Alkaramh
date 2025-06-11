@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react'; // Import useContext
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, Text,Image ,TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { useNavigation } from '@react-navigation/native';
 import AuthContext from '../../context/AuthContext'; // Import AuthContext
@@ -34,20 +34,26 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.firsthalf}>
+      <View style={styles.firsthalf}>
           <View style={styles.firsthalfinner}>
-            <View style={styles.profilepic}></View>
+            <View style={styles.profilepic}>
+             <Image style={styles.profilepic} source={require('../../assets/person.png')} />
+              
+            </View>
             <View style={styles.profiledetail}>
-              <Text style={styles.name}>{user?.name || 'Guest User'}</Text>
-              <Text style={styles.email}>{user?.email || 'Not logged in'}</Text>
+          {/*    <Text style={styles.name}>{user?.name || 'Guest User'}</Text> */}
+           {/*   <Text style={styles.email}>{user?.email || 'Not logged in'}</Text> */}
+           <Text style={styles.name}>Sivakumar S</Text>
+           <Text style={styles.email}>Not updated</Text>
             </View>
           </View>
         </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
 
         <View style={styles.secondhalf}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
-          <ListItem icon="person-outline" label="Personal Information" onPress={() => user ? null : navigation.navigate('Login')}/>
+          <ListItem icon="person-outline" label="Personal Information" onPress={()=>navigation.navigate('PersonalInfomation')}/>
           {user && ( // Only show Change Password if user is logged in
             <ListItem
               icon="lock-closed-outline"
@@ -123,6 +129,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp("5%"),
   },
   firsthalfinner: {
+    paddingTop:wp('10%'),
     flexDirection: "row",
     alignItems: "center",
   },
@@ -144,15 +151,18 @@ const styles = StyleSheet.create({
   email: {
     fontSize: wp("3.8%"),
     color: "#d1d1f7",
+  }, avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   secondhalf: {
     flex: 1,
     backgroundColor: "#f2f2f2",
-    borderTopLeftRadius: wp("8%"),
-    borderTopRightRadius: wp("8%"),
-    paddingTop: hp("3%"),
-    paddingHorizontal: wp("5%"),
-    marginTop: -hp("3%"),
+    borderTopLeftRadius: wp("28%"),
+    borderTopRightRadius: wp("28%"),
+    paddingHorizontal:wp('5%')
+    
   },
   sectionTitle: {
     marginTop: hp("2%"),
@@ -176,5 +186,84 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: hp('10%'), 
+  },
+});
+
+export const commonStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#E6E9F0',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  backButton: {
+    flexDirection: "row",
+    padding: 8,
+  },
+  backText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  sectionContainer: {
+    paddingHorizontal: 16,
+    marginVertical: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#4F46E5',
+    fontWeight: '500',
+  },
+  primaryButton: {
+    backgroundColor: '#4F46E5',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+   avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#4F46E5',
+  },
+  secondaryButtonText: {
+    color: '#4F46E5',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

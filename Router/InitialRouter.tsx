@@ -13,7 +13,8 @@ import OrderHistoryScreen from "../components/Profile/OrderHistoryScreen";
 import Profile from "../components/Profile/Profile";
 import WishlistScreen from "../components/Profile/WishlistScreen";
 import AuthContext from "../context/AuthContext";
-
+import ProfileScreen from "@/components/Profile/Personalnformation";
+import { NotificationScreen } from "@/components/Homepage/notofication";
 const Stack = createStackNavigator();
 
 const InitialRouter = () => {
@@ -45,12 +46,29 @@ const InitialRouter = () => {
               name="OrderHistoryScreen"
               component={OrderHistoryScreen}
             />
+            <Stack.Screen name='PersonalInfomation' component={ProfileScreen}/>
+             <Stack.Screen name = 'Notficationscreen' component={NotificationScreen}/>
           </>
         ) : (
           <>
             <Stack.Screen name="Login" component={MobileLoginScreen} />
             <Stack.Screen name="otp" component={Otp} />
+            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="Products" component={Products} />
+            <Stack.Screen name="Cart" component={Cart} />
+            <Stack.Screen name="ProductIndetail" component={ProductDetails} />
+            <Stack.Screen name="Checkout" component={Checkoutpage} />
+            <Stack.Screen name="WishlistScreen" component={WishlistScreen} />
+            <Stack.Screen
+              name="OrderHistoryScreen"
+              component={OrderHistoryScreen}
+            />
+            <Stack.Screen name = 'Notficationscreen' component={NotificationScreen}/>
+            <Stack.Screen name = 'ProductDetails' component={ProductDetails}/>  
+             <Stack.Screen name='PersonalInfomation' component={ProfileScreen}/>
           </>
+
         )}
       </Stack.Navigator>
     </NavigationContainer>

@@ -19,8 +19,11 @@ import {
 import Footer from "../../Utils/Footer/Footer";
 import apiConfig from "../../api.json";
 import AuthContext from "../../context/AuthContext"; // Import AuthContext
+import ListProduct from "./listproduct";
+import { useNavigation } from "expo-router";
 
 const Products = () => {
+  const navigation = useNavigation();
   const route = useRoute<any>();
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -140,27 +143,36 @@ const Products = () => {
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.header}>
         <TouchableOpacity>
-          <Ionicons name="chevron-back" size={24} />
+          <Ionicons name="chevron-back" size={24} onPress={() => navigation.goBack()}/>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Al Karamh Trading</Text>
         <View style={styles.ratingBox}>
           <Text style={styles.ratingText}>4.8 ★</Text>
         </View>
+        <Text style={styles.ratingText2}> 5k Ratings</Text>
       </View>
-
-      <Text style={styles.subtext}>120 - 150 mins</Text>
+            
+     <View style={styles.timeContainer}>
+  <Ionicons name="time-outline" size={16} color="#666" style={{ marginRight: 5 }} />
+  <Text style={styles.subtext}>120 - 150 mins</Text>
+</View>
 
       <View style={styles.badgeContainer}>
         <View style={styles.badge}>
-          <Text>Last 100 Orders Without Complaints</Text>
+          <Ionicons name="checkmark" size={16} color="#4CAF50" />
+          <Text style={styles.badgeText}> Last 100 Orders Without Complaints</Text>
         </View>
         <View style={styles.badge}>
-          <Text>Bestseller</Text>
+          <Ionicons name="checkmark" size={16} color="#4CAF50" />
+          <Text style={styles.badgeText}> Bestseller</Text>
         </View>
         <View style={styles.badge}>
-          <Text>Frequently Reordered</Text>
+          <Ionicons name="checkmark" size={16} color="#4CAF50" />
+          <Text style={styles.badgeText}> Frequently Reordered</Text>
         </View>
       </View>
+
+      <View style={styles.searchheder}>
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color="gray" />
         <TextInput
@@ -169,71 +181,51 @@ const Products = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-      </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <View style={styles.productList}>
-          {loading && <Text>Loading products...</Text>}
-          {error && <Text>Error fetching products: {error}</Text>}
-          {!loading &&
-            !error &&
-            products.map((item) => {
-              const isCurrentItemWishlisted = wishlistedItems.has(item._id);
-              return (
-                <View key={item._id} style={styles.ultraProductCard}>
-                  <View style={styles.ultraImageContainer}>
-                    <Image
-                      source={{ uri: item.image[0] }}
-                      style={styles.ultraProductImage}
-                      resizeMode="cover"
-                    />
-                    <TouchableOpacity
-                      style={styles.ultraHeart}
-                      onPress={() => handleAddToWishlist(item._id)}
-                      disabled={wishlistLoadingProductId === item._id}
-                    >
-                      <Ionicons
-                        name={
-                          isCurrentItemWishlisted ? "heart" : "heart-outline"
-                        }
-                        size={28}
-                        color={isCurrentItemWishlisted ? "#e53935" : "#bbb"}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.ultraProductInfo}>
-                    <Text style={styles.ultraProductName} numberOfLines={1}>
-                      {item.name.en}
-                    </Text>
-                    <View style={styles.ultraRow}>
-                      <Ionicons name="pricetag" size={18} color="#2A3B8F" />
-                      <Text style={styles.ultraProductPrice}>
-                        {item.price} QAR
-                      </Text>
-                    </View>
-                    <View style={styles.ultraRow}>
-                      <Ionicons name="cube-outline" size={16} color="#888" />
-                      <Text style={styles.ultraProductCategory}>
-                        {item.category}
-                      </Text>
-                    </View>
-                    <View style={styles.ultraRow}>
-                      <Ionicons name="star" size={16} color="#f5c518" />
-                      <Text style={styles.ultraProductRating}>4.8</Text>
-                      <Text style={styles.ultraProductStock}>
-                        • Stock: {item.stock ?? "N/A"}
-                      </Text>
-                    </View>
-                    <Text style={styles.ultraProductDesc} numberOfLines={2}>
-                      {item.description?.en ||
-                        "Al Karamh is renowned for its high-quality products."}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-        </View>
+      </View>
+      </View>
+      <View style={styles.tabsContainers}>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: hp("0%") }}>
+  {[
+    "All products",
+    "Aala Feed",
+    "Alfalfa",
+    "Corn",
+    "Dates",
+    "Hay",
+    "Hen Feed",
+    "Milets",
+    "Rodhes",
+    "Mineral Salt",
+  ].map((category, index) => (
+    <Text
+      key={index}
+      style={[styles.tabs, category === "All products" && styles.activeTabs]}
+    >
+      {category}
+    </Text>
+  ))}
+</ScrollView>
+
+      </View>
+      <Text style={{ fontSize: 20, fontWeight: "bold", margin: 16 }}>All Products</Text>
+      <ScrollView style={styles.productList}>
+        {products.map((product) => (
+          <View key={product._id} style={styles.productCard}>
+            <Image source={{ uri: product.image }} style={styles.productImage} />
+            <View style={styles.productInfo}>
+              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productRating}>{product.rating} ★</Text>
+              <Text style={styles.productPrice}>${product.price}</Text>
+              <Text style={styles.productDesc}>{product.description}</Text>
+            </View>
+              
+          </View>
+        ))}
       </ScrollView>
+      <ListProduct/>
+      <View style={{ height: hp("7%") }} />
+
       <Footer />
     </View>
   );
@@ -249,12 +241,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: hp("3%"),
+    marginTop: hp("8%"),
     marginHorizontal: wp("3%"),
   },
   selectedTabText: {
     fontSize: 20,
-
     marginBottom: hp("2%"),
     color: "#333",
   },
@@ -266,18 +257,32 @@ const styles = StyleSheet.create({
     marginLeft: wp("1%"),
   },
   ratingBox: {
-    backgroundColor: "#2ECC71",
+    backgroundColor: "#156739",
     borderRadius: 5,
     padding: 5,
+    left: wp("12%"),
+    color: "#6D7079",
   },
   ratingText: {
     color: "white",
     fontWeight: "bold",
+  }
+  ,
+   ratingText2: {
+    fontSize: 8,
+    top: hp("2.5%"),
   },
-  subtext: {
-    marginLeft: wp("5%"),
-    color: "gray",
-    marginTop: hp("0.5%"),
+  clockicon: {
+    top: hp("2.3%"),
+    left: wp("5%"),
+  },
+ subtext: {
+  fontSize: 14,
+  color: "gray",
+},
+  badgeText:{
+   fontSize: 12,
+   color:"#6D717C"
   },
   badgeContainer: {
     flexDirection: "row",
@@ -291,44 +296,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginRight: 8,
     marginBottom: 8,
+    flexDirection: "row",
   },
-  badgeText: {
-    fontSize: 12,
-    color: "#333",
-  },
+ 
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F4F4F4",
+    backgroundColor: "#FAFAFA",
     borderRadius: 10,
-    marginHorizontal: wp("5%"),
-    padding: 5,
+    marginHorizontal: wp("2%"),
+    paddingVertical:wp('4%') ,
+    paddingHorizontal: wp("4%"),
+    borderWidth: .5,
+    borderColor: "#C0C0C0",
   },
   searchInput: {
+    backgroundColor: "#FFFFF",
     marginLeft: 10,
     flex: 1,
+  
   },
-  tabsContainer: {
+  tabsContainers: {
     marginVertical: hp("2%"),
     paddingHorizontal: wp("5%"),
-    paddingTop: hp("1%"),
-    paddingBottom: hp("2%"),
+       
     backgroundColor: "#ffffffd8",
     width: wp("94%"),
   },
-  tab: {
+  tabs: {
     marginRight: 20,
     color: "#555",
   },
-  activeTab: {
+  activeTabs: {
     fontWeight: "bold",
     borderBottomWidth: 2,
     borderColor: "#007bff",
-    paddingBottom: 2,
+    paddingBottom: hp("2%"),
   },
   productList: {
     paddingHorizontal: wp("5%"),
+    
   },
+  
   productCard: {
     flexDirection: "row",
     marginBottom: hp("2%"),
@@ -369,6 +378,13 @@ const styles = StyleSheet.create({
   productDesc: {
     fontSize: 12,
     color: "#666",
+  },
+  searchheder:{
+
+    color:"#F3F4F8",
+    backgroundColor:"#F3F4F8",
+    paddingVertical: hp("2%"),
+    paddingHorizontal: wp("2%"),
   },
   heart: {
     position: "absolute",
@@ -466,4 +482,12 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 6,
   },
+  timeContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: hp("2%"),
+  marginLeft: wp("5%"),
+},
+
+
 });
