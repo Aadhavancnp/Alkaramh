@@ -17,7 +17,7 @@ import {
 } from 'react-native-responsive-screen';
 import { useNavigation } from 'expo-router';
 
-const ProfileScreen: React.FC = () => {
+const ProfileScreen = () => {
   const [user, setUser] = useState({
     name: 'Sivakumar',
     mobile: '9150203344',

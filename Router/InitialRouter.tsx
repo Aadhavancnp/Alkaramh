@@ -14,12 +14,14 @@ import Profile from "../components/Profile/Profile";
 import WishlistScreen from "../components/Profile/WishlistScreen";
 import AuthContext from "../context/AuthContext";
 import ProfileScreen from "@/components/Profile/Personalnformation";
-import { NotificationScreen } from "@/components/Homepage/notofication";
+import  NotificationScreen  from "@/components/Homepage/notofication";
+
+import SearchScreen from "@/components/Homepage/Searchpage";
 const Stack = createStackNavigator();
 
 const InitialRouter = () => {
-  const authContext = useContext(AuthContext);
-  const { user, token, isLoading } = authContext || {};
+ {/* const authContext = useContext(AuthContext);
+  const { user, token, isLoading } = null || {};
 
   if (isLoading) {
     return (
@@ -29,29 +31,11 @@ const InitialRouter = () => {
       </View>
     );
   }
-
+*/}
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {user && token ? (
-          <>
-            <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="Profile" component={Profile} />
-            <Stack.Screen name="Products" component={Products} />
-            <Stack.Screen name="Cart" component={Cart} />
-            <Stack.Screen name="ProductIndetail" component={ProductDetails} />
-            <Stack.Screen name="Checkout" component={Checkoutpage} />
-            <Stack.Screen name="WishlistScreen" component={WishlistScreen} />
-            <Stack.Screen
-              name="OrderHistoryScreen"
-              component={OrderHistoryScreen}
-            />
-            <Stack.Screen name='PersonalInfomation' component={ProfileScreen}/>
-             <Stack.Screen name = 'Notficationscreen' component={NotificationScreen}/>
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={MobileLoginScreen} />
+        <Stack.Screen name="Login" component={MobileLoginScreen} />
             <Stack.Screen name="otp" component={Otp} />
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="Profile" component={Profile} />
@@ -64,12 +48,12 @@ const InitialRouter = () => {
               name="OrderHistoryScreen"
               component={OrderHistoryScreen}
             />
-            <Stack.Screen name = 'Notficationscreen' component={NotificationScreen}/>
-            <Stack.Screen name = 'ProductDetails' component={ProductDetails}/>  
-             <Stack.Screen name='PersonalInfomation' component={ProfileScreen}/>
-          </>
+              <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: false }} />
 
-        )}
+            <Stack.Screen name = 'NotificationScreen' component={NotificationScreen}/>
+            <Stack.Screen name = 'ProductDetails' component={ProductDetails}/>  
+      
+            <Stack.Screen name = 'PersonalInfomation' component={ProfileScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -9,9 +9,6 @@ import {
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 // Replace this with your actual navigation param list
-type RootStackParamList = {
-  ProductIndetail: { product: Product };
-};
 
 const TradingCard = ({
   imageSource,
@@ -21,11 +18,12 @@ const TradingCard = ({
   hasNoComplaints = true,
   isBestseller = true,
   isFrequentlyReordered = true,
-  onPress,
+  
 }) => {
+    const navigation = useNavigation();
   return (
     
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Products')}>
       {/* Image Container */}
       <View style={styles.imageContainer}>
         <Image

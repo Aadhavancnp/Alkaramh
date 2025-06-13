@@ -1,26 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
-import axios from "axios";
-import React, { useContext, useEffect, useState } from "react"; // Import useContext
+import { useNavigation } from "expo-router";
+import React, { useState } from "react"; // Import useContext
 import {
-  Alert,
   Image,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import Footer from "../../Utils/Footer/Footer";
-import apiConfig from "../../api.json";
-import AuthContext from "../../context/AuthContext"; // Import AuthContext
 import ListProduct from "./listproduct";
-import { useNavigation } from "expo-router";
 
 const Products = () => {
   const navigation = useNavigation();
@@ -29,7 +25,7 @@ const Products = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const [loading, setLoading] = useState<boolean>(true);
+  {/*const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // Wishlist states
@@ -138,7 +134,7 @@ const Products = () => {
       setWishlistLoadingProductId(null);
     }
   };
-
+*/}
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.header}>
@@ -180,6 +176,7 @@ const Products = () => {
           style={styles.searchInput}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onPressIn={() => navigation.navigate('SearchScreen')}
         />
 
       </View>

@@ -16,24 +16,30 @@ import {
 } from "react-native-responsive-screen";
 import { useNavigation } from "expo-router";
 
-const ProductDetails = () => {
-  const [customModalVisible, setCustomModalVisible] = useState(false);
-  const [customQty, setCustomQty] = useState('');
+// ✅ Single Product Data
+const product = {
+  name: "Wheat Straw – 6kg",
+  description:
+    "Al Karamh is renowned for its high-quality products. This product showcases their dedication to excellence. Customers trust Al Karamh for reliable and superior goods.",
+  price: "12 QAR",
+  rating: 4.5,
+  ratingCount: "1.24K Reviews",
+  image: require("../../assets/g-wheat.png"),
+  variants: ["10 kg", "20 kg", "30 kg"],
+  quantityOptions: ["10", "20", "30", "40"],
+};
 
-  const navigation = useNavigation();
-  const [selectedVariant, setSelectedVariant] = useState("10 kg");
+const ProductDetails = ( { navigation }:any ) => {
+  const [customModalVisible, setCustomModalVisible] = useState(false);
+  const [customQty, setCustomQty] = useState("");
+ 
+  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const variants = ["10 kg", "20 kg", "30 kg"];
-
-  const renderStars = (rati:any) => {
+  const renderStars = (rati: any) => {
     const fullStars = Math.floor(rati);
     const hasHalfStar = rati % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    const [customModalVisible, setCustomModalVisible] = useState(false);
-    const [customQty, setCustomQty] = useState('');
-
-
     const stars = [];
 
     for (let i = 0; i < fullStars; i++) {
@@ -68,18 +74,18 @@ const ProductDetails = () => {
 
         <View style={styles.imageContainer}>
           <Image
-            source={require("../../assets/g-wheat.png")}
+            source={product.image}
             style={styles.productImage}
             resizeMode="contain"
           />
           <TouchableOpacity style={styles.shareIcon}>
-            <Ionicons name="share-social-outline" size={20} color="#000" />
+            <Ionicons name="arrow-redo-outline" size={20} color="#000" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>Wheat Straw – 6kg</Text>
+            <Text style={styles.productTitle}>{product.name}</Text>
             <TouchableOpacity onPress={() => setIsFavorite(!isFavorite)}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
@@ -90,16 +96,16 @@ const ProductDetails = () => {
           </View>
 
           <View style={styles.ratingRow}>
-            <View style={styles.starRow}>{renderStars(4.5)}</View>
-            <Text style={styles.ratingValue}>4.5</Text>
-            <Text style={styles.ratingCount}>(1.24K Reviews)</Text>
+            <View style={styles.starRow}>{renderStars(product.rating)}</View>
+            <Text style={styles.ratingValue}>{product.rating}</Text>
+            <Text style={styles.ratingCount}>({product.ratingCount})</Text>
           </View>
 
-          <Text style={styles.price}>12 QAR</Text>
+          <Text style={styles.price}>{product.price}</Text>
 
           <Text style={styles.sectionTitle}>Variants</Text>
           <View style={styles.variantRow}>
-            {variants.map((variant) => (
+            {product.variants.map((variant) => (
               <TouchableOpacity
                 key={variant}
                 onPress={() => setSelectedVariant(variant)}
@@ -121,63 +127,63 @@ const ProductDetails = () => {
           </View>
 
           <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>
-            Al Karamh is renowned for its high-quality products. This product
-            showcases their dedication to excellence. Customers trust Al Karamh
-            for reliable and superior goods.
-          </Text>
+          <Text style={styles.description}>{product.description}</Text>
 
-        
           <Text style={styles.sectionTitle}>Choose Quantity</Text>
           <View style={styles.quantityRow}>
-          {["10", "20", "30", "40"].map((qty) => (
-          <TouchableOpacity key={qty} style={styles.quantityButton} onPress={() => console.log(`Selected quantity: ${qty}`)}>
+            {product.quantityOptions.map((qty) => (
+              <TouchableOpacity
+                key={qty}
+                style={styles.quantityButton}
+                onPress={() => console.log(`Selected quantity: ${qty}`)}
+              >
                 <Text style={styles.quantityText}>{qty}</Text>
-          </TouchableOpacity>
-          ))}
-        <TouchableOpacity
-  style={styles.customButton}
-  onPress={() => setCustomModalVisible(true)}
->
-  <Text style={styles.customText}>Custom</Text>
-</TouchableOpacity>
-
-</View>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={styles.customButton}
+              onPress={() => setCustomModalVisible(true)}
+            >
+              <Text style={styles.customText}>Custom</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
-        {customModalVisible && (
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContent}>
-      <Text style={styles.modalTitle}>Custom quantity</Text>
-      <TextInput
-        style={styles.modalInput}
-        placeholder="Enter custom quantity"
-        keyboardType="numeric"
-        value={customQty}
-        onChangeText={setCustomQty}
-      />
-      <View style={styles.modalButtons}>
-        
-        <TouchableOpacity
-          style={styles.modalButtonPrimary}
-          onPress={() => {
-            setCustomModalVisible(false);
-            // Save or use customQty here
-            console.log("Custom quantity entered:", customQty);
-          }}
-        >
-          <Text style={styles.modalButtonTextPrimary}>Add to cart</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-)}
+
+      {customModalVisible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Custom quantity</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter quantity"
+              keyboardType="numeric"
+              value={customQty}
+              onChangeText={setCustomQty}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonPrimary}
+                onPress={() => {
+                  setCustomModalVisible(false);
+                  console.log("Custom quantity entered:", customQty);
+                }}
+              >
+                <Text style={styles.modalButtonTextPrimary}>Add to cart</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.cartButton}>
+        <TouchableOpacity style={styles.cartButton} onPress={()=>navigation.navigate('Cart',{showEmpty: true})}>
           <Text style={styles.cartButtonText}>Add to cart</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buyButton}>
+        <TouchableOpacity
+          style={styles.buyButton}
+          onPress={()=>navigation.navigate('Cart',{showEmpty: true})}
+        >
           <Text style={styles.buyButtonText}>Buy Now</Text>
         </TouchableOpacity>
       </View>
@@ -215,9 +221,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 20,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#ffffff",
     borderRadius: 20,
     padding: 8,
+    elevation: 2,
+    shadowColor: "#000",
   },
   content: {
     paddingHorizontal: wp("5%"),

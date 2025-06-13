@@ -18,7 +18,7 @@ const Footer = () => {
   const route = useRoute();
 
   // Map "Products" to "Home" for footer highlighting
-  const currentRoute = route.name === "Products" ? "Home" : route.name;
+  const currentRoute = route.name === "Products" || route.name === "SearchScreen" || route.name === 'NotificationScreen' ? "Home" : route.name;
 
   const tabs = [
     { name: "Home", icon: "home", label: "Home" },

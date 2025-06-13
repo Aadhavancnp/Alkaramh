@@ -1,82 +1,102 @@
+import { AntDesign, Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   Image,
+  NativeSyntheticEvent,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
+  TextInputFocusEventData,
   TouchableOpacity,
   View,
 } from 'react-native';
-import TradingCard from './spotlighcard';
-import { Ionicons, Feather, FontAwesome5, MaterialIcons, AntDesign } from '@expo/vector-icons';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Footer from '../../Utils/Footer/Footer';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import FilterPopup from './filterui';
+import TradingCard from './spotlighcard';
 
-// Replace this with your actual navigation param list
-type RootStackParamList = {
-  ProductIndetail: { product: Product };
+type NavigationProps = {
+  navigation: {
+    navigate: (screen: string, params?: any) => void;
+  };
 };
+
 const categories = [
-  { id: 1, name: 'All',  active: true, image: require('../../assets/all.png') },
-  { id: 2, name: 'Feed',  active: false, image: require('../../assets/feed.png') },
-  { id: 3, name: 'Protein',  active: false, image: require('../../assets/protein.jpg') },
+  { id: 1, name: 'All', active: true, image: require('../../assets/all.png') },
+  { id: 2, name: 'Feed', active: false, image: require('../../assets/feed.png') },
+  { id: 3, name: 'Protein', active: false, image: require('../../assets/protein.jpg') },
   { id: 4, name: 'Salts', active: false, image: require('../../assets/salts.jpg') },
   { id: 5, name: 'Millet', active: false, image: require('../../assets/millet.png') },
-  { id: 6, name: 'Alfalfa',  active: false, image: require('../../assets/alfalfa.jpg') },
-  { id: 7, name: 'Tibin',  active: false, image: require('../../assets/tibin.png') },
-  { id: 8, name: 'Rodhes',  active: false, image: require('../../assets/feed.png') }
+  { id: 6, name: 'Alfalfa', active: false, image: require('../../assets/alfalfa.jpg') },
+  { id: 7, name: 'Tibin', active: false, image: require('../../assets/tibin.png') },
+  { id: 8, name: 'Rodhes', active: false, image: require('../../assets/feed.png') },
 ];
 
+const Home: React.FC<NavigationProps> = ({ navigation }) => {
+  const [showFilter, setShowFilter] = useState(false);
+  const [filters, setFilters] = useState({
+    previouslyOrdered: false,
+    ratings: false,
+    offers: false,
+  });
 
-const Home = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  
-  const [products, setProductsList ]= useState([
-  {
-    id: 1,
-    image: require('../../assets/wheat.png'),
-    name: 'Wheat Straw',
-    price: 'QAR 12',
-    rating: 4.7,
-    liked: false,
-  },
-  {
-    id: 2,
-    image: require('../../assets/wheat.png'),
-    name: 'Wheat Straw ',
-    price: 'QAR 12',
-    rating: 4.7,
-    liked: false,
-  },
-  {
-    id: 3,
-    image: require('../../assets/wheat.png'),
-    name: 'Wheat Straw',
-    price: 'QAR 12',
-    rating: 4.7,
-    liked: false,
-  },
-]);
-  const toggleFavourite = (id:any) => {
-  const updated = products.map((product) =>
-    product.id === id ? { ...product, liked: !product.liked } : product
-  );
-  setProductsList(updated);
-};
+  const [products, setProductsList] = useState([
+    {
+      id: 1,
+      image: require('../../assets/wheat.png'),
+      name: 'Wheat Straw',
+      price: 'QAR 12',
+      rating: 4.7,
+      liked: false,
+    },
+    {
+      id: 2,
+      image: require('../../assets/wheat.png'),
+      name: 'Wheat Straw ',
+      price: 'QAR 12',
+      rating: 4.7,
+      liked: false,
+    },
+    {
+      id: 3,
+      image: require('../../assets/wheat.png'),
+      name: 'Wheat Straw',
+      price: 'QAR 12',
+      rating: 4.7,
+      liked: false,
+    },
+  ]);
 
-const handleProductnativation = () => {
-  navigation.navigate('Products');
-}
+  const toggleFavourite = (id: number) => {
+    const updated = products.map(product =>
+      product.id === id ? { ...product, liked: !product.liked } : product
+    );
+    setProductsList(updated);
+  };
 
-  const HandleNotification = () => {
-    console.log('1');
+  const handleProductNavigation = () => {
+    navigation.navigate('Products');
+  };
+
+  const handleNotification = () => {
+    navigation.navigate('NotificationScreen');
+  };
+
+  const toggleFilter = (key: keyof typeof filters) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const handleInputFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    navigation.navigate('SearchScreen');
   };
 
   return (
@@ -90,79 +110,97 @@ const handleProductnativation = () => {
               placeholder="Search deals, products & more..."
               style={styles.searchInput}
               placeholderTextColor="#999"
+              onFocus={handleInputFocus}
             />
           </View>
-          <TouchableOpacity style={styles.notificationButton} onPress={HandleNotification}>
+          <TouchableOpacity style={styles.notificationButton} onPress={handleNotification}>
             <View style={styles.notificationIcon}>
               <AntDesign style={styles.notificationText} name="bells" />
               <View style={styles.notificationDot} />
             </View>
           </TouchableOpacity>
         </View>
-       
+
         <View style={styles.categoriesContainer}>
           <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Explore category</Text>
-            <TouchableOpacity onPress={handleProductnativation}>
-              <Text style={styles.seeAll}>See all</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map(category => (
-              <TouchableOpacity
-                key={category.id}
-                style={[styles.categoryItem, category.active && styles.categoryItemActive]}
-              >
-                <View style={styles.categoryIcon}>
-                  <Image style={styles.categoryIconText} source={category.image} />
-                </View>
-                <Text
-                  style={[styles.categoryName, category.active && styles.categoryNameActive]}
-                >
-                  {category.name}
-                </Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Explore category</Text>
+              <TouchableOpacity onPress={handleProductNavigation}>
+                <Text style={styles.seeAll}>See all</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {categories.map(category => (
+                <TouchableOpacity
+                  key={category.id}
+                  style={[styles.categoryItem, category.active && styles.categoryItemActive]}
+                >
+                  <View style={styles.categoryIcon}>
+                    <Image style={styles.categoryIconText} source={category.image} />
+                  </View>
+                  <Text
+                    style={[styles.categoryName, category.active && styles.categoryNameActive]}
+                  >
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
 
         <View style={styles.filterBar}>
-          <TouchableOpacity style={styles.filterButton}>
-            <Feather name="sliders" color="black" style={styles.filterIcon} />
-            <Text style={styles.filterText}>Filters</Text>
-            <Text style={styles.filterArrow}>▼</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterOption}>
-            <Text style={styles.filterOptionText}>Previously Ordered</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterOption}>
-            <Text style={styles.filterOptionText}>Rating 4.0+</Text>
-          </TouchableOpacity>
+          <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+            <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)}>
+              <Feather name="sliders" color="black" style={styles.filterIcon} />
+              <Text style={styles.filterText}>Filters</Text>
+              <Text style={styles.filterArrow}>▼</Text>
+            </TouchableOpacity>
+            <FilterPopup visible={showFilter} onClose={() => setShowFilter(false)} />
+
+            {Object.entries(filters).map(([key, value]) => (
+              <TouchableOpacity
+                key={key}
+                style={value ? styles.filterOptionclicked : styles.filterOption}
+                onPress={() => toggleFilter(key as keyof typeof filters)}
+              >
+                <Text style={styles.filterOptionText}>
+                  {key === 'previouslyOrdered'
+                    ? 'Previously Ordered'
+                    : key === 'ratings'
+                    ? 'Ratings 4.0+'
+                    : 'Great offers'}
+                </Text>
+                {value && <AntDesign name="close" style={styles.XArrow} />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>RECOMMENDED FOR YOU</Text>
-              
-              <TouchableOpacity onPress={handleProductnativation}>
-
+            <TouchableOpacity onPress={handleProductNavigation}>
               <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productsScrollView}>
             {products.map(product => (
-              <View key={product.id} style={styles.productCard} onAccessibilityTap={() => navigation.navigate('ProductIndetail', { product : product })}>
-                <TouchableOpacity style={styles.likeButton} onPress={()=>toggleFavourite(product.id)}>
+              <TouchableOpacity
+                key={product.id}
+                style={styles.productCard}
+                onPress={() => navigation.navigate('ProductIndetail', { product })}
+              >
+                <TouchableOpacity style={styles.likeButton} onPress={() => toggleFavourite(product.id)}>
                   <AntDesign
-                    name={product.liked ? 'heart' : 'hearto'}                    style={styles.likeIcon}
-                  color={product.liked ? 'red' : 'black'}
+                    name={product.liked ? 'heart' : 'hearto'}
+                    style={styles.likeIcon}
+                    color={product.liked ? 'red' : 'black'}
                   />
                 </TouchableOpacity>
 
-                <View style={styles.productImageContainer} onMagicTap={() => navigation.navigate('ProductIndetail', { product: product })}>
+                <View style={styles.productImageContainer}>
                   <Image source={product.image} style={styles.productimage} />
                   <View style={styles.ratingContainer}>
                     <Text style={styles.rating}>{product.rating}</Text>
@@ -174,28 +212,28 @@ const handleProductnativation = () => {
                   <Text style={styles.productName}>{product.name}</Text>
                   <Text style={styles.productPrice}>{product.price}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
 
         <View>
           <Text style={styles.spotlightTitle}>IN THE SPOTLIGHT</Text>
-          
-        
-            <TradingCard />
-        
+          <TradingCard 
+            image={require('../../assets/wheat.png')}
+            title="Exclusive Offer"
+            description="Get 20% off on your next purchase"
+            onPress={() => navigation.navigate('OfferDetails')}
+          />
         </View>
       </ScrollView>
+
       <Footer />
     </SafeAreaView>
-    
   );
 };
 
-
-
-
+export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -393,17 +431,37 @@ const styles = StyleSheet.create({
     fontSize: wp('2%'),
     color: '#666',
   },
+  XArrow:{
+    fontSize: wp('5%'),
+    color: '#666',
+    
+  },
   filterOption: {
     borderRadius:wp('2%'),
     borderWidth:wp('.3%'),
     borderColor: '#EFEFEF',
     paddingHorizontal: wp('3%'),
     paddingVertical: hp('1%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
     marginRight: wp('3%'),
+   
+  },
+  filterOptionclicked: {
+    borderRadius:wp('2%'),
+    borderWidth:wp('.3%'),
+    borderColor: '#283593',
+    backgroundColor: '#E5E8F8',
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1%'),
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   filterOptionText: {
     fontSize: wp('3%'),
     color: '#666',
+    paddingRight: wp('5%'),
   },
   productsScrollView: {
     marginHorizontal: -wp('5%'),
@@ -532,5 +590,3 @@ const styles = StyleSheet.create({
     marginBottom: hp('1%'),
   },
 });
-
-export default Home;
