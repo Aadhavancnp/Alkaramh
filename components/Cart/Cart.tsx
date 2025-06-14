@@ -1,16 +1,15 @@
+import Footer from "@/Utils/Footer/Footer";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
+  Image, Modal, SafeAreaView,
+  ScrollView, StatusBar, StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,Modal
+  View
 } from "react-native";
 import {
   heightPercentageToDP as hp,
@@ -105,6 +104,26 @@ const Cart = () => {
 
   const handleUpdateQuantity = (productId: string, change: number) => {
 
+    setCartItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.product._id === productId) {
+          const newQuantity = item.quantity + change;
+          if (newQuantity < 1) {
+            Alert.alert("Invalid quantity", "Quantity cannot be less than 1");
+            return item; // No change
+          }
+          if (newQuantity > item.product.stock) {
+            Alert.alert(
+              "Stock Limit",
+              `Maximum available stock is ${item.product.stock}`
+            );
+            return item; // No change
+          }
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      })
+    );
   };
 
   const handleDirectQuantityChange = (productId: string, text: string, maxStock: number) => {
@@ -128,12 +147,13 @@ const Cart = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar />
       <View style={{ flex: 1 }}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Ionicons name="chevron-back" onPress={() => navigation.navigate("Home")} size={24} />
+            <Ionicons name="chevron-back" onPress={() => navigation.navigate("Home")} size={24} style={styles.headerTitle}/>
             <Text style={styles.headerTitle}>
-              {cartItems.length === 0 ? "Order" : "Your Order"}
+              {cartItems.length === 0 ? "Cart" : "Your Order"}
             </Text>
           </View>
 
@@ -319,7 +339,7 @@ const Cart = () => {
     </View>
   </View>
 </Modal>
-
+  {cartItems.length === 0 ? <Footer/> :null}
     </SafeAreaView>
     
   );
@@ -338,12 +358,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F6FC",
   },
   header: {
+
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 0,
-    marginTop: 0,
+
   },
   headerTitle: {
+    marginTop: hp("2.5%"),
     fontSize: wp("5%"),
     fontWeight: "600",
     marginLeft: wp("2%"),
@@ -366,11 +388,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginVertical: hp("1%"),
     padding: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+   
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: 10,

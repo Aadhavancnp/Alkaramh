@@ -220,10 +220,8 @@ const Home: React.FC<NavigationProps> = ({ navigation }) => {
         <View>
           <Text style={styles.spotlightTitle}>IN THE SPOTLIGHT</Text>
           <TradingCard 
-            image={require('../../assets/wheat.png')}
-            title="Exclusive Offer"
-            description="Get 20% off on your next purchase"
-            onPress={() => navigation.navigate('OfferDetails')}
+            imageSource={require('../../assets/wheat.png')}
+           
           />
         </View>
       </ScrollView>

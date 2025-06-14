@@ -1,6 +1,8 @@
 {
   "expo": {
     "name": "Alkarmh",
+    "owner": "sharathbalan",
+
     "slug": "alkarmh",
     "version": "1.0.0",
     "orientation": "portrait",

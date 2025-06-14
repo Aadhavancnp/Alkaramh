@@ -70,12 +70,12 @@ const Profile = () => {
           <ListItem 
             icon="cube-outline" 
             label="Your orders" 
-            onPress={() => user ? navigation.navigate('OrderHistoryScreen') : navigation.navigate('Login')}
+            onPress={() => navigation.navigate('OrderHistoryScreen') }
           />
           <ListItem 
             icon="heart-outline" 
             label="Wishlist" 
-            onPress={() => user ? navigation.navigate('WishlistScreen') : navigation.navigate('Login')}
+            onPress={() => navigation.navigate('WishlistScreen') }
           />
           <ListItem icon="map-outline" label="Address book" />
 

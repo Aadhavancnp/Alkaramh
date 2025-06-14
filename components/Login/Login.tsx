@@ -417,122 +417,110 @@ const AuthScreen = () => {
 
 export default AuthScreen;
 const styless = StyleSheet.create({
-    container: {
-      padding:hp("3%"),
-     // width:wp("95%"),
-      backgroundColor: "#fff",
-      height: hp("100%"),
-
-    },
-  
-    logo:{
-      width:wp('7%'),
-      height:wp('7%')
-
-    },
-    applelogo:{
-      width:wp('8%'),
-      height:wp('8%')
-
-    },langSwitch: {
+  container: {
+    paddingHorizontal: wp("5%"),
+    paddingTop: hp("5%"),
+    backgroundColor: "#fff",
+    height: hp("100%"),
+  },
+  langSwitch: {
     alignSelf: 'flex-end',
-    marginRight: wp('0'),
-    marginTop:15
-},
-    langText: {
-      padding:wp('1.5%'),
-      borderRadius:10,
-      borderWidth:1,
-      fontSize: 16,
-      color: '#1A237E',
-},
-
-    title: {
-      fontSize: wp("8%"),
-      marginTop: hp("9%"),
-      fontWeight: "400",
-      color: "#1A237E",
-      marginBottom: hp("6%"),
-    },
-    inputRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#ffffff",
-      borderRadius: wp("2%"),
-      //paddingHorizontal: wp("3%"),
-      marginBottom: hp("1%"),
-      borderColor: "#ddd",
-     // borderWidth: 1,
-    },
-    codeBox: {
-      paddingRight: wp("2.5%"),
-      padding:wp("2.5"),
-      borderWidth:wp(".4"),
-      borderRadius:wp("2"),
-    //  borderRightWidth: 1,
-      borderColor: "#ccc",
-      marginRight:wp("2")
-    },
-    codeText: {
-      fontSize: wp("4%"),
-      color: "#1A237E",
-    },
-    input: {
-      flex: 1,
-      padding:wp("2.5"),
-      fontSize: wp("4%"),
-      borderWidth:wp(".4"),
-      color: "#000",
-      borderColor: "#ccc",
-      borderRadius:wp("2")
-    },
-    subtext: {
-      fontSize: wp("3.5%"),
-      color: "#888",
-      marginBottom: hp("2%"),
-    },
-    continueButton: {
-      backgroundColor: "#303F9F",
-      paddingVertical: hp(".25%"),
-      marginTop: hp("1.5%"),
-      borderRadius: wp("2%"),
-    },
-    orContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginVertical: hp("4%"),
-    },
-    orText: {
-      marginHorizontal: wp("3%"),
-      color: "#aaa",
-      fontSize: wp("3.5%"),
-    },
-    line: {
-      flex: 1,
-      height: 1,
-      backgroundColor: "#ddd",
-    },
-    socialButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent:'center',
-      borderColor: "#ccc",
-      borderWidth: 1,
-      borderRadius: wp("2%"),
-      padding: hp("1.5%"),
-      marginBottom: hp("3%"),
-    },
-    socialText: {
-
-      fontSize: wp("4%"),
-      marginLeft: wp("2.5%"),
-    },
-    footer: {
-      fontSize: wp("3%"),
-      color: "#888",
-      marginTop: hp("10%"),
-    },
-  });
-  
-
-
+    marginTop: hp("1%"),
+  },
+  langText: {
+    padding: wp('2%'),
+    borderRadius: wp("2%"),
+    borderWidth: 1,
+    fontSize: wp("3.8%"),
+    color: '#1A237E',
+  },
+  title: {
+    fontSize: wp("7%"),
+    marginTop: hp("6%"),
+    fontWeight: "500",
+    color: "#1A237E",
+    marginBottom: hp("4%"),
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp("2%"),
+  },
+  codeBox: {
+    padding: wp("2%"),
+    borderWidth: 1,
+    borderRadius: wp("2%"),
+    borderColor: "#ccc",
+    marginRight: wp("2%"),
+  },
+  codeText: {
+    fontSize: wp("4%"),
+    color: "#1A237E",
+  },
+  input: {
+    flex: 1,
+    paddingVertical: hp("1.5%"),
+    paddingHorizontal: wp("3%"),
+    fontSize: wp("4%"),
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: wp("2%"),
+    color: "#000",
+  },
+  subtext: {
+    fontSize: wp("3.5%"),
+    color: "#888",
+    marginBottom: hp("2%"),
+  },
+  continueButton: {
+    backgroundColor: "#303F9F",
+    paddingVertical: hp("1.5%"),
+    borderRadius: wp("2%"),
+    marginBottom: hp("3%"),
+  },
+  orContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: hp("2%"),
+  },
+  orText: {
+    marginHorizontal: wp("3%"),
+    color: "#aaa",
+    fontSize: wp("3.5%"),
+  },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ddd",
+  },
+  socialButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: wp("2%"),
+    paddingVertical: hp("1.5%"),
+    marginBottom: hp("2%"),
+  },
+  logo: {
+    width: wp('6%'),
+    height: wp('6%'),
+    resizeMode: 'contain',
+  },
+  applelogo: {
+    width: wp('7%'),
+    height: wp('7%'),
+    resizeMode: 'contain',
+  },
+  socialText: {
+    fontSize: wp("4%"),
+    marginLeft: wp("3%"),
+  },
+  footer: {
+    fontSize: wp("3%"),
+    color: "#888",
+    marginTop: hp("5%"),
+    textAlign: "center",
+  },
+});

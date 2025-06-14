@@ -24,6 +24,7 @@ import {
     }
   };
   const Otp = () => {
+    
   const route = useRoute(); 
   const  {lang}= route.params || { lang: 'English' };
   const t = translations[lang];
@@ -107,66 +108,66 @@ export default Otp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: wp("5%"),
-    // alignItems:'center',
+    paddingHorizontal: wp("5%"),
+    backgroundColor: "#fff",
   },
   textContainer: {
     gap: hp("2%"),
     marginTop: hp("7%"),
   },
   firsttext: {
-    fontSize: wp("5.5%"),
-    fontWeight: "400",
+    fontSize: wp("5%"),
+    fontWeight: "500",
     color: "#030518",
+    textAlign: "left",
   },
   secondtext: {
-    fontSize: wp("3.3%"),
+    fontSize: wp("4%"),
     color: "#555",
+    textAlign: "left",
   },
   otpfield: {
-    paddingTop:wp('5%'),
-    display: "flex",
+    paddingTop: hp("5%"),
     flexDirection: "row",
-    justifyContent:'center',
-   
+    justifyContent: "center",
   },
   otpbox: {
-   // width: wp("15%"),
     borderWidth: 1,
     borderColor: "#999",
     textAlign: "center",
-    fontSize: wp("5%"),
+    fontSize: wp("5.5%"),
     borderRadius: wp("2%"),
-  //  marginLeft: wp("5%"),
-  },
-
-  verifycontainer: {
-    width: wp("90%"),
-    marginTop: hp("5%"),
-  },
-  verifybutton: {
-    backgroundColor: "#283593",
-    padding:hp('1%'),
-    borderRadius:wp('3'),
-    paddingTop:hp('2%'),
-    paddingBottom:hp('2%')
-  },
-  verifytext: {
-    textAlign: "center",
-    color:'#ffff'
+    width: wp("12%"),
+    height: wp("12%"),
   },
   otresendsection: {
     marginTop: hp("2%"),
     alignItems: "center",
   },
   otpresendtext: {
-    color: "#00000",
-    fontWeight:'400',
+    color: "#1A237E",
+    fontWeight: "500",
     fontSize: wp("4%"),
     textAlign: "center",
   },
   timertext: {
     color: "#000000",
     fontSize: wp("4%"),
+  },
+  verifycontainer: {
+    marginTop: hp("5%"),
+    width: "100%",
+  },
+  verifybutton: {
+    backgroundColor: "#283593",
+    paddingVertical: hp("1.8%"),
+    borderRadius: wp("3%"),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  verifytext: {
+    color: "#FFFFFF",
+    fontSize: wp("4.2%"),
+    fontWeight: "500",
   },
 });

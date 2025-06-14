@@ -17,8 +17,7 @@ const Footer = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // Map "Products" to "Home" for footer highlighting
-  const currentRoute = route.name === "Products" || route.name === "SearchScreen" || route.name === 'NotificationScreen' ? "Home" : route.name;
+  const currentRoute =route.name;
 
   const tabs = [
     { name: "Home", icon: "home", label: "Home" },
@@ -39,17 +38,17 @@ const Footer = () => {
               style={[styles.tabItem, isActive && styles.activeTab]}
               onPress={() => navigation.navigate(tab.name as never)}
             >
-              <Icon
-                name={tab.icon}
-                type="font-awesome"
-                color={isActive ? "#2d46eb" : "#999"}
-                size={24}
-              />
-              {isActive && (
-                <Text style={styles.activeLabel}>
-                  {tab.label}
-                </Text>
-              )}
+              <View style={[styles.tabContent, isActive && styles.activeContent]}>
+                <Icon
+                  name={tab.icon}
+                  type="font-awesome"
+                  color={isActive ? "#2d46eb" : "#999"}
+                  size={24}
+                />
+                {isActive && (
+                  <Text style={styles.activeLabel}>{tab.label}</Text>
+                )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -62,11 +61,10 @@ export default Footer;
 
 const styles = StyleSheet.create({
   safeArea: {
-   
     backgroundColor: "#fff",
   },
   footer: {
-    height: hp('6%'),
+    height: hp("7%"),
     backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-around",
@@ -77,22 +75,27 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: wp("2%"),
+    paddingVertical: hp("1%"),
     borderRadius: 50,
   },
   activeTab: {
-    padding:wp('3%'),
     borderWidth: 1,
     borderColor: "#2d46eb",
     backgroundColor: "#e8edff",
-    flexDirection:'row'
+  },
+  tabContent: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activeContent: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   activeLabel: {
-    paddingHorizontal:wp('1%'),
+    paddingLeft: wp("2%"),
     fontSize: 12,
     color: "#2d46eb",
-   
     fontWeight: "600",
   },
 });
