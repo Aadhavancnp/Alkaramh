@@ -32,9 +32,9 @@ const SearchScreen = ({ navigation }: any) => {
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>
-      <View style={{top: hp('75%'), flex: 1}}>
+     {/* <View style={{top: hp('80%'), flex: 1}}>
         <Footer />
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 };

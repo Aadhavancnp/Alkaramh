@@ -6,11 +6,13 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
 
-// Replace this with your actual navigation param list
-
-const TradingCard = ({
+const SpotlightCard = ({
   imageSource,
   deliveryTime = '120 - 150 mins',
   businessName = 'Al Karamh Trading',
@@ -18,30 +20,25 @@ const TradingCard = ({
   hasNoComplaints = true,
   isBestseller = true,
   isFrequentlyReordered = true,
-  
+  OnSellAll
 }) => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
+
   return (
-    
-    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Products')}>
-      {/* Image Container */}
+    <TouchableOpacity style={styles.card} onPress={OnSellAll}>
       <View style={styles.imageContainer}>
         <Image
-          source={require('../../assets/green.jpeg') || { uri: 'https://via.placeholder.com/300x200' }}
+          source={require('../../assets/green.jpeg')}
           style={styles.image}
           resizeMode="cover"
         />
-        
-        {/* Delivery Time Badge */}
         <View style={styles.timeBadge}>
           <Text style={styles.timeIcon}>⏱</Text>
           <Text style={styles.timeText}>{deliveryTime}</Text>
         </View>
       </View>
 
-      {/* Content Container */}
       <View style={styles.content}>
-        {/* Business Name and Rating */}
         <View style={styles.header}>
           <Text style={styles.businessName}>{businessName}</Text>
           <View style={styles.ratingContainer}>
@@ -50,7 +47,6 @@ const TradingCard = ({
           </View>
         </View>
 
-        {/* Status Badges */}
         <View style={styles.statusContainer}>
           {hasNoComplaints && (
             <View style={styles.statusBadge}>
@@ -58,7 +54,7 @@ const TradingCard = ({
               <Text style={styles.statusText}>Last 100 Orders Without Complaints</Text>
             </View>
           )}
-          
+
           <View style={styles.bottomBadges}>
             {isBestseller && (
               <View style={styles.statusBadge}>
@@ -66,7 +62,7 @@ const TradingCard = ({
                 <Text style={styles.statusText}>Bestseller</Text>
               </View>
             )}
-            
+
             {isFrequentlyReordered && (
               <View style={styles.statusBadge}>
                 <Text style={styles.checkmark}>✓</Text>
@@ -83,22 +79,19 @@ const TradingCard = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    borderRadius: wp('4%'),
+    marginHorizontal: wp('4%'),
+    marginVertical: hp('1%'),
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 4,
     overflow: 'hidden',
   },
   imageContainer: {
     position: 'relative',
-    height: 200,
+    height: hp('25%'),
   },
   image: {
     width: '100%',
@@ -106,112 +99,89 @@ const styles = StyleSheet.create({
   },
   timeBadge: {
     position: 'absolute',
-    bottom: 12,
-    left: 12,
+    bottom: hp('1.5%'),
+    left: wp('3%'),
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('0.8%'),
+    borderRadius: wp('6%'),
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 3,
   },
   timeIcon: {
-    fontSize: 16,
-    marginRight: 6,
+    fontSize: wp('4%'),
+    marginRight: wp('1.5%'),
   },
   timeText: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     fontWeight: '600',
     color: '#333',
   },
   content: {
-    padding: 16,
+    padding: wp('4%'),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: hp('1.5%'),
   },
   businessName: {
-    fontSize: 24,
+    fontSize: wp('5%'),
     fontWeight: 'bold',
     color: '#1a1a1a',
     flex: 1,
   },
   ratingContainer: {
     backgroundColor: '#2d5a2d',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('0.8%'),
+    borderRadius: wp('5%'),
     flexDirection: 'row',
     alignItems: 'center',
   },
   rating: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: wp('4%'),
     fontWeight: 'bold',
-    marginRight: 4,
+    marginRight: wp('1%'),
   },
   star: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: wp('4%'),
   },
   statusContainer: {
-    gap: 12,
+    gap: hp('1%'),
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1%'),
+    borderRadius: wp('2%'),
   },
   checkmark: {
     color: '#22c55e',
-    fontSize: 16,
+    fontSize: wp('4%'),
     fontWeight: 'bold',
-    marginRight: 8,
+    marginRight: wp('2%'),
   },
   statusText: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#6b7280',
     fontWeight: '500',
   },
   bottomBadges: {
     flexDirection: 'row',
-    gap: 8,
+    gap: wp('2%'),
+    flexWrap: 'wrap',
   },
 });
 
-// Example usage component
-const ExampleUsage = () => {
-  const handleCardPress = () => {
-    console.log('Card pressed!');
-  };
-
-  return (
-    <View style={{ flex: 1, backgroundColor: '#0000', paddingTop: 100 , elevation:100 }}>
-      <TradingCard
-        deliveryTime="120 - 150 mins"
-        businessName="Al Karamh Trading"
-        rating="4.8"
-        hasNoComplaints={true}
-        isBestseller={true}
-        isFrequentlyReordered={true}
-        onPress={handleCardPress}
-      />
-    </View>
-  );
-};
-
-export default TradingCard;
+export default SpotlightCard;

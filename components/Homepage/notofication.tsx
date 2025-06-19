@@ -1,5 +1,3 @@
-
-import Footer from "@/Utils/Footer/Footer";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
@@ -9,15 +7,14 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
   Alert,
   Image,
+  StatusBar,
 } from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-
 
 interface NotificationProps {
   onEnableNotifications?: () => Promise<void>;
@@ -62,7 +59,6 @@ const NotificationScreen: React.FC<NotificationProps> = ({
       if (onRemindLater) {
         await onRemindLater();
       } else {
-        // Default behavior
         Alert.alert("Reminder Set", "We'll remind you later about notifications.");
         navigation.goBack();
       }
@@ -73,8 +69,9 @@ const NotificationScreen: React.FC<NotificationProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F3F4F8" />
+      <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity 
@@ -88,72 +85,63 @@ const NotificationScreen: React.FC<NotificationProps> = ({
           <View style={{ width: wp("6%") }} />
         </View>
 
-        {/* Scrollable Content */}
-        <ScrollView 
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.content}>
-            <View style={styles.contentContainer}>
-              <Image 
-                source={require('../../assets/bell_icon.png')}
-                style={styles.bellIcon}
-                resizeMode="contain"
-              />
+        {/* Content */}
+        <View style={styles.content}>
+          <View style={styles.contentContainer}>
+            <Image 
+              source={require('../../assets/bell_icon.png')}
+              style={styles.bellIcon}
+              resizeMode="contain"
+            />
 
-              <Text style={styles.title}>{title}</Text>
-              <Text style={styles.subtitle}>{subtitle}</Text>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.subtitle}>{subtitle}</Text>
 
+            <TouchableOpacity 
+              style={[styles.enableButton, isLoading && styles.disabledButton]}
+              onPress={handleEnableNotifications}
+              disabled={isLoading}
+              accessibilityLabel="Enable notifications"
+            >
+              <Text style={styles.enableButtonText}>
+                {isLoading ? "Enabling..." : enableButtonText}
+              </Text>
+            </TouchableOpacity>
+
+            {showRemindLater && (
               <TouchableOpacity 
-                style={[styles.enableButton, isLoading && styles.disabledButton]}
-                // onPress={handleEnableNotifications}
-                disabled={isLoading}
-                accessibilityLabel="Enable notifications"
+                onPress={handleRemindLater}
+                style={styles.remindLaterButton}
+                accessibilityLabel="Remind me later"
               >
-                <Text style={styles.enableButtonText}>
-                  {isLoading ? "Enabling..." : enableButtonText}
-                </Text>
+                <Text style={styles.remindLater}>{remindLaterText}</Text>
               </TouchableOpacity>
-
-              {showRemindLater && (
-                <TouchableOpacity 
-                  // onPress={handleRemindLater}
-                  style={styles.remindLaterButton}
-                  accessibilityLabel="Remind me later"
-                >
-                  <Text style={styles.remindLater}>{remindLaterText}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            )}
           </View>
-        </ScrollView>
-
-        {/* Fixed Footer */}
-        <View style={styles.footerContainer}>
-            <Footer/>
         </View>
-      </View>
+      </SafeAreaView>
     </SafeAreaView>
   );
 };
 
-
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: "#fff",
   },
-  container: {
+  safeArea: {
     flex: 1,
-    paddingHorizontal: wp("1%"),
     backgroundColor: "#fff",
+    // Account for bottom tab bar space
+    marginBottom: hp("10%"),
+    marginTop: hp("2%"),
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: hp("1.5%"),
     marginTop: hp("1%"),
-    paddingHorizontal: wp("4%"),
+    paddingHorizontal: wp("5%"),
   },
   backButton: {
     // No additional styles needed
@@ -162,22 +150,6 @@ const styles = StyleSheet.create({
     fontSize: wp("5%"),
     fontWeight: "600",
     marginLeft: wp("2%"),
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#e0e0e0",
-    marginVertical: hp("2%"),
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: hp("2%"),
-  },
-  footerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
   },
   content: {
     flex: 1,

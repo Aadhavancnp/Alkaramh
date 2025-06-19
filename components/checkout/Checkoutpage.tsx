@@ -1,3 +1,4 @@
+// No change in imports
 import React, { useState } from 'react';
 import {
   View,
@@ -17,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const Checkoutpage = () => {
   const navigation = useNavigation();
-  const [selectedPayment, setSelectedPayment] = useState('debit'); // Default selected payment method
+  const [selectedPayment, setSelectedPayment] = useState('debit');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,9 +27,7 @@ const Checkoutpage = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <View>
-            <Ionicons name="chevron-back" size={24} />
-          </View>
+          <Ionicons name="chevron-back" size={wp('6%')} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Checkout</Text>
       </View>
@@ -42,82 +41,57 @@ const Checkoutpage = () => {
               <Text style={styles.sectionTitle}>Pay with</Text>
             </View>
             
-            <TouchableOpacity
-              style={styles.paymentOption}
-              onPress={() => setSelectedPayment('debit')}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <FontAwesome style={styles.paymentIcon} name='credit-card'/>
-                <Text style={styles.paymentLabel}>Debit Card</Text>
-              </View>
-              <View style={styles.radioContainer}>
-                <View style={[
-                  styles.radioButton,
-                  selectedPayment === 'debit' && styles.radioButtonSelected
-                ]}>
-                  {selectedPayment === 'debit' && <View style={styles.radioButtonInner} />}
+            {/* Payment Methods */}
+            {['debit', 'credit', 'cash'].map(method => (
+              <TouchableOpacity
+                key={method}
+                style={styles.paymentOption}
+                onPress={() => setSelectedPayment(method)}
+              >
+                <View style={styles.paymentOptionLeft}>
+                  {method === 'cash' ? (
+                    <Image
+                      style={styles.paymentIconImage}
+                      source={require('../../assets/Vector.png')}
+                    />
+                  ) : (
+                    <FontAwesome style={styles.paymentIcon} name="credit-card" />
+                  )}
+                  <Text style={styles.paymentLabel}>
+                    {method === 'debit' ? 'Debit Card' :
+                     method === 'credit' ? 'Credit Card' :
+                     'Cash on delivery'}
+                  </Text>
                 </View>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.paymentOption}
-              onPress={() => setSelectedPayment('credit')}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <FontAwesome style={styles.paymentIcon} name='credit-card'/>
-                <Text style={styles.paymentLabel}>Credit Card</Text>
-              </View>
-              <View style={styles.radioContainer}>
-                <View style={[
-                  styles.radioButton,
-                  selectedPayment === 'credit' && styles.radioButtonSelected
-                ]}>
-                  {selectedPayment === 'credit' && <View style={styles.radioButtonInner} />}
+                <View style={styles.radioContainer}>
+                  <View style={[
+                    styles.radioButton,
+                    selectedPayment === method && styles.radioButtonSelected
+                  ]}>
+                    {selectedPayment === method && <View style={styles.radioButtonInner} />}
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.paymentOption}
-              onPress={() => setSelectedPayment('cash')}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <Image style={styles.paymentIcon} source={require('../../assets/Vector.png')} />
-                <Text style={styles.paymentLabel}>Cash on delivery</Text>
-              </View>
-              <View style={styles.radioContainer}>
-                <View style={[
-                  styles.radioButton,
-                  selectedPayment === 'cash' && styles.radioButtonSelected
-                ]}>
-                  {selectedPayment === 'cash' && <View style={styles.radioButtonInner} />}
-                </View>
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* Price Details Section */}
+        {/* Price Details */}
         <View style={styles.section}>
           <View style={styles.priceDetails}>
             <View style={styles.sectionHeader}>
               <View style={styles.blueLine} />
               <Text style={styles.sectionTitle}>Price details</Text>
             </View>
-            
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Basket Total</Text>
               <Text style={styles.priceValue}>24 QAR</Text>
             </View>
-            
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Delivery Fee</Text>
               <Text style={styles.priceValue}>50 QAR</Text>
             </View>
-            
             <View style={styles.separator} />
-            
             <View style={styles.priceRow}>
               <Text style={styles.totalLabel}>Total amount</Text>
               <Text style={styles.totalValue}>74 QAR</Text>
@@ -126,9 +100,9 @@ const Checkoutpage = () => {
         </View>
       </View>
 
-      {/* Place Order Button */}
+      {/* Place Order */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.placeOrderButton}>
+        <TouchableOpacity style={styles.placeOrderButton} onPress={() => navigation.navigate('Dashboard')}>
           <Text style={styles.placeOrderText}>Place Order</Text>
         </TouchableOpacity>
       </View>
@@ -136,6 +110,7 @@ const Checkoutpage = () => {
   );
 };
 
+// Responsive styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -144,62 +119,56 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: wp('2%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('2%'),
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   backButton: {
-    marginRight: 15,
-  },
-  backIcon: {
-    fontSize: 24,
-    color: '#333333',
-    fontWeight: '300',
+    marginRight: wp('3%'),
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: wp('5.5%'),
     fontWeight: '600',
     color: '#333333',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: wp('5%'),
   },
   section: {
-    marginTop: 20,
+    marginTop: hp('2.5%'),
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 0,
-    paddingTop: 16,
+    marginBottom: hp('2%'),
+    paddingTop: hp('2%'),
   },
   blueLine: {
-    width: 4,
-    height: 20,
+    width: wp('1.2%'),
+    height: hp('2.5%'),
     backgroundColor: '#283593',
-    marginRight: 12,
+    marginRight: wp('3%'),
     borderRadius: 2,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: wp('4.5%'),
     fontWeight: '600',
     color: '#283593',
   },
   paymentOptions: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingVertical: 8,
+    borderRadius: wp('3%'),
+    paddingVertical: hp('1%'),
   },
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: wp('4%'),
-    paddingVertical: hp('3%'),
+    paddingVertical: hp('2.5%'),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
@@ -208,21 +177,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   paymentIcon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: wp('5.5%'),
+    marginRight: wp('3%'),
+    color: '#333',
+  },
+  paymentIconImage: {
+    width: wp('5.5%'),
+    height: wp('5.5%'),
+    resizeMode: 'contain',
+    marginRight: wp('3%'),
   },
   paymentLabel: {
-    fontSize: 16,
+    fontSize: wp('4.2%'),
     color: '#333333',
     fontWeight: '400',
   },
   radioContainer: {
-    padding: 4,
+    padding: wp('1%'),
   },
   radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: wp('5%'),
+    height: wp('5%'),
+    borderRadius: wp('2.5%'),
     borderWidth: 2,
     borderColor: '#d1d5db',
     alignItems: 'center',
@@ -232,62 +208,62 @@ const styles = StyleSheet.create({
     borderColor: '#283593',
   },
   radioButtonInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: wp('2.5%'),
+    height: wp('2.5%'),
+    borderRadius: wp('1.25%'),
     backgroundColor: '#283593',
   },
   priceDetails: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 0,
+    borderRadius: wp('3%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('2%'),
   },
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: hp('2%'),
+    paddingVertical: hp('1.5%'),
   },
   priceLabel: {
-    fontSize: 16,
+    fontSize: wp('4%'),
     color: '#6b7280',
     fontWeight: '400',
   },
   priceValue: {
-    fontSize: 16,
+    fontSize: wp('4%'),
     color: '#333333',
     fontWeight: '500',
   },
   separator: {
     height: 1,
     backgroundColor: '#f0f0f0',
-    marginVertical: 8,
+    marginVertical: hp('1%'),
   },
   totalLabel: {
-    fontSize: 16,
+    fontSize: wp('4.2%'),
     color: '#333333',
     fontWeight: '600',
   },
   totalValue: {
-    fontSize: 16,
+    fontSize: wp('4.2%'),
     color: '#333333',
     fontWeight: '600',
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: wp('5%'),
+    paddingVertical: hp('2.5%'),
   },
   placeOrderButton: {
     backgroundColor: '#283593',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: wp('3%'),
+    paddingVertical: hp('2.2%'),
     alignItems: 'center',
     justifyContent: 'center',
   },
   placeOrderText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: wp('4.5%'),
     fontWeight: '600',
   },
 });

@@ -1,232 +1,112 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
-import { useNavigation } from "expo-router";
-import React, { useState } from "react"; // Import useContext
+import React, { useState } from "react";
 import {
+  Alert,
   Image,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import Footer from "../../Utils/Footer/Footer";
 import ListProduct from "./listproduct";
+import { BackHandler } from 'react-native';
 
 const Products = () => {
   const navigation = useNavigation();
-  const route = useRoute<any>();
-  const [allProducts, setAllProducts] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const route = useRoute();
 
-  {/*const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Wishlist states
-  const [wishlistedItems, setWishlistedItems] = useState<Set<string>>(
-    new Set()
-  );
-  const [wishlistLoadingProductId, setWishlistLoadingProductId] = useState<
-    string | null
-  >(null);
-
-  const authContext = useContext(AuthContext);
-  const { user, token } = authContext || {};
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let data;
-        if (route.params?.category) {
-          const response = await axios.post(
-            `${apiConfig.API_URL}/categories/products`,
-            { category: route.params.category }
-          );
-          if (response.data && response.data.data) {
-            data = response.data.data;
-          } else {
-            throw new Error("Invalid response from server");
-          }
-        } else {
-          const response = await axios.get(`${apiConfig.API_URL}/products`);
-          if (response.data && response.data.data) {
-            data = response.data.data;
-          } else {
-            throw new Error("Invalid response from server");
-          }
-        }
-        setAllProducts(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  // 🔁 Detect swipe-back or back action and log it
+useFocusEffect(
+  React.useCallback(() => {
+    const onBackPress = () => {
+      navigation.navigate("Home", { showCleared: false });
+      return true; // prevent default behavior (exit app or go back)
     };
 
-    fetchProducts();
-  }, [route.params?.category]);
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
-  // Only filter by search query now
-  useEffect(() => {
-    let tempFilteredProducts = [...allProducts];
-    if (searchQuery.trim() !== "") {
-      tempFilteredProducts = tempFilteredProducts.filter((product) =>
-        product.name.en.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    setProducts(tempFilteredProducts);
-  }, [allProducts, searchQuery]);
+    return () => backHandler.remove(); // ✅ clean up with .remove()
+  }, [])
+);
 
-  const handleAddToWishlist = async (productId: string) => {
-    if (!user || !token) {
-      Alert.alert(
-        "Authentication Error",
-        "Please login to add items to your wishlist."
-      );
-      return;
-    }
-    if (wishlistedItems.has(productId)) {
-      Alert.alert("Info", "This item is already in your wishlist.");
-      return;
-    }
-
-    setWishlistLoadingProductId(productId);
-
-    try {
-      const response = await fetch(
-        "https://alkarmah-backend.onrender.com/api/wishlist/add",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            userId: user._id,
-            productId: productId,
-          }),
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to add to wishlist.");
-      }
-
-      setWishlistedItems((prev) => new Set(prev).add(productId));
-      Alert.alert("Success", responseData.message || "Added to wishlist!");
-    } catch (err: any) {
-      // Handle error, e.g., show an alert or set a specific error state
-      Alert.alert(
-        "Wishlist Error",
-        err.message || "Could not add to wishlist."
-      );
-    } finally {
-      setWishlistLoadingProductId(null);
-    }
-  };
-*/}
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ backgroundColor: "#fff", flex: 1 }}>
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="chevron-back" size={24} onPress={() => navigation.goBack()}/>
+        <TouchableOpacity onPress={() => navigation.navigate("Home", { showCleared: false })}>
+          <Ionicons name="chevron-back" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Al Karamh Trading</Text>
         <View style={styles.ratingBox}>
           <Text style={styles.ratingText}>4.8 ★</Text>
         </View>
-        <Text style={styles.ratingText2}> 5k Ratings</Text>
+        <Text style={styles.ratingText2}>5k Ratings</Text>
       </View>
-            
-     <View style={styles.timeContainer}>
-  <Ionicons name="time-outline" size={16} color="#666" style={{ marginRight: 5 }} />
-  <Text style={styles.subtext}>120 - 150 mins</Text>
-</View>
+
+      <View style={styles.timeContainer}>
+        <Ionicons name="time-outline" size={16} color="#666" style={{ marginRight: 5 }} />
+        <Text style={styles.subtext}>120 - 150 mins</Text>
+      </View>
 
       <View style={styles.badgeContainer}>
-        <View style={styles.badge}>
-          <Ionicons name="checkmark" size={16} color="#4CAF50" />
-          <Text style={styles.badgeText}> Last 100 Orders Without Complaints</Text>
-        </View>
-        <View style={styles.badge}>
-          <Ionicons name="checkmark" size={16} color="#4CAF50" />
-          <Text style={styles.badgeText}> Bestseller</Text>
-        </View>
-        <View style={styles.badge}>
-          <Ionicons name="checkmark" size={16} color="#4CAF50" />
-          <Text style={styles.badgeText}> Frequently Reordered</Text>
-        </View>
+        {["Last 100 Orders Without Complaints", "Bestseller", "Frequently Reordered"].map((text, idx) => (
+          <View key={idx} style={styles.badge}>
+            <Ionicons name="checkmark" size={16} color="#4CAF50" />
+            <Text style={styles.badgeText}> {text}</Text>
+          </View>
+        ))}
       </View>
 
       <View style={styles.searchheder}>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color="gray" />
-        <TextInput
-          placeholder="Search products here..."
-          style={styles.searchInput}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onPressIn={() => navigation.navigate('SearchScreen')}
-        />
+        <View style={styles.searchContainer}>
+          <Ionicons name="search-outline" size={20} color="gray" />
+          <TextInput
+            placeholder="Search products here..."
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onPressIn={() => navigation.navigate("SearchScreen")}
+          />
+        </View>
+      </View>
 
-      </View>
-      </View>
       <View style={styles.tabsContainers}>
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: hp("0%") }}>
-  {[
-    "All products",
-    "Aala Feed",
-    "Alfalfa",
-    "Corn",
-    "Dates",
-    "Hay",
-    "Hen Feed",
-    "Milets",
-    "Rodhes",
-    "Mineral Salt",
-  ].map((category, index) => (
-    <Text
-      key={index}
-      style={[styles.tabs, category === "All products" && styles.activeTabs]}
-    >
-      {category}
-    </Text>
-  ))}
-</ScrollView>
-
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {[
+            "All products", "Aala Feed", "Alfalfa", "Corn", "Dates", "Hay",
+            "Hen Feed", "Milets", "Rodhes", "Mineral Salt"
+          ].map((category, index) => (
+            <Text
+              key={index}
+              style={[styles.tabs, category === "All products" && styles.activeTabs]}
+            >
+              {category}
+            </Text>
+          ))}
+        </ScrollView>
       </View>
-      <Text style={{ fontSize: 20, fontWeight: "bold", margin: 16 }}>All Products</Text>
-      <ScrollView style={styles.productList}>
-        {products.map((product) => (
-          <View key={product._id} style={styles.productCard}>
-            <Image source={{ uri: product.image }} style={styles.productImage} />
-            <View style={styles.productInfo}>
-              <Text style={styles.productName}>{product.name}</Text>
-              <Text style={styles.productRating}>{product.rating} ★</Text>
-              <Text style={styles.productPrice}>${product.price}</Text>
-              <Text style={styles.productDesc}>{product.description}</Text>
-            </View>
-              
-          </View>
-        ))}
-      </ScrollView>
-      <ListProduct/>
-      <View style={{ height: hp("7%") }} />
 
-      <Footer />
-    </View>
+      <Text style={{ fontSize: 20, fontWeight: "bold", margin: 16 }}>All Products</Text>
+
+      
+
+      <ListProduct />
+     
+    </SafeAreaView>
   );
 };
+
+
 
 export default Products;
 
@@ -238,7 +118,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: hp("8%"),
+    marginTop: hp("3%"),
     marginHorizontal: wp("3%"),
   },
   selectedTabText: {
@@ -267,7 +147,7 @@ const styles = StyleSheet.create({
   ,
    ratingText2: {
     fontSize: 8,
-    top: hp("2.5%"),
+    top: hp("3.0%"),
   },
   clockicon: {
     top: hp("2.3%"),

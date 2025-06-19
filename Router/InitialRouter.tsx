@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import Cart from "../components/Cart/Cart";
 import Checkoutpage from "../components/checkout/Checkoutpage";
-import Home from "../components/Homepage/Home";
+import {Home} from "../components/Homepage/Home";
 import MobileLoginScreen from "../components/Login/Login";
 import Otp from "../components/Login/otp/Otp";
 import ProductDetails from "../components/ProductIndetail/View";
@@ -17,6 +17,8 @@ import ProfileScreen from "@/components/Profile/Personalnformation";
 import  NotificationScreen  from "@/components/Homepage/notofication";
 
 import SearchScreen from "@/components/Homepage/Searchpage";
+import Dashboard from "@/components/Homepage/Dashboard";
+import AboutScreen from "@/components/Profile/AboutScreen";
 const Stack = createStackNavigator();
 
 const InitialRouter = () => {
@@ -38,6 +40,7 @@ const InitialRouter = () => {
         <Stack.Screen name="Login" component={MobileLoginScreen} />
             <Stack.Screen name="otp" component={Otp} />
             <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="Dashboard" component={Dashboard} />
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="Products" component={Products} />
             <Stack.Screen name="Cart" component={Cart} />
@@ -52,7 +55,7 @@ const InitialRouter = () => {
 
             <Stack.Screen name = 'NotificationScreen' component={NotificationScreen}/>
             <Stack.Screen name = 'ProductDetails' component={ProductDetails}/>  
-      
+            <Stack.Screen name = 'AboutScreen' component={AboutScreen}/>
             <Stack.Screen name = 'PersonalInfomation' component={ProfileScreen}/>
       </Stack.Navigator>
     </NavigationContainer>

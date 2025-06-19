@@ -1,41 +1,121 @@
-import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
+  Alert,
   Image,
   ImageBackground,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+import Toast from 'react-native-toast-message';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
 
 const ProfileScreen = () => {
+  const navigation = useNavigation();
+
   const [user, setUser] = useState({
-    name: 'Sivakumar',
-    mobile: '9150203344',
+    name: '',
+    mobile: '',
     email: '',
     dateOfBirth: '',
+    imageUri: '',
   });
 
-  const handleUpdateProfile = () => {
-    console.log('Profile updated:', user);
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('userProfile');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          setUser({
+            name: 'Sivakumar',
+            mobile: '9150203344',
+            email: '',
+            dateOfBirth: '',
+            imageUri: '',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const handleUpdateProfile = async () => {
+    try {
+      const oldUserData = await AsyncStorage.getItem('userProfile');
+      const oldUser = oldUserData ? JSON.parse(oldUserData) : {};
+
+      const changes: string[] = [];
+      if (oldUser.name !== user.name) changes.push('Name');
+      if (oldUser.mobile !== user.mobile) changes.push('Mobile');
+      if (oldUser.email !== user.email) changes.push('Email');
+      if (oldUser.dateOfBirth !== user.dateOfBirth) changes.push('Date of Birth');
+      if (oldUser.imageUri !== user.imageUri) changes.push('Profile Photo');
+
+      if (changes.length === 0) {
+        Toast.show({
+          type: 'info',
+          text1: 'No changes made',
+          text2: 'Update at least one field.',
+        });
+        return;
+      }
+
+      await AsyncStorage.setItem('userProfile', JSON.stringify(user));
+
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated',
+        text2: `${changes.join(', ')} updated successfully.`,
+      });
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: 'Could not save your profile.',
+      });
+    }
   };
 
-  const navigation = useNavigation();
-  const isEmailEntered = user.email.trim() !== '';
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert('Permission required', 'Please allow media access to update profile picture.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+      aspect: [1, 1],
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setUser((prev) => ({ ...prev, imageUri: uri }));
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        {/* Back Header */}
+        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={24} />
@@ -46,33 +126,52 @@ const ProfileScreen = () => {
         <View style={styles.headerBackground}></View>
 
         <View style={styles.profileWrapper}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
             <View style={styles.avatar}>
-              <Image style={styles.avatarImage} source={require('../../assets/person.png')} />
+              {user.imageUri ? (
+                <Image source={{ uri: user.imageUri }} style={styles.avatarImage} />
+              ) : (
+                <Image
+                  style={styles.avatarImage}
+                  source={require('../../assets/person.png')}
+                />
+              )}
             </View>
-          </View>
+            <Text style={styles.changePhotoText}>Tap to change photo</Text>
+          </TouchableOpacity>
 
           <ImageBackground
             source={require('../../assets/Union.png')}
             style={styles.formContainer}
             imageStyle={styles.backgroundImage}
           >
+            {/* Name */}
             <View style={styles.inputWrapper}>
               <View style={{ backgroundColor: '#FFFFFF', paddingHorizontal: 10 }}>
                 <Text style={styles.label}>Name</Text>
               </View>
               <View style={styles.inputGroup}>
-                <TextInput style={styles.input} value={user.name} />
+                <TextInput
+                  style={styles.input}
+                  value={user.name}
+                  onChangeText={(text) => setUser({ ...user, name: text })}
+                />
               </View>
             </View>
 
+            {/* Mobile */}
             <View style={styles.inputWrapper}>
               <Text style={styles.label}>Mobile</Text>
               <View style={styles.inputGroup}>
-                <TextInput style={styles.input} value={user.mobile} />
+                <TextInput
+                  style={styles.input}
+                  value={user.mobile}
+                  onChangeText={(text) => setUser({ ...user, mobile: text })}
+                />
               </View>
             </View>
 
+            {/* Email */}
             <View style={styles.inputWrapper}>
               <View style={styles.inputGroup}>
                 <TextInput
@@ -86,6 +185,7 @@ const ProfileScreen = () => {
               </View>
             </View>
 
+            {/* DOB */}
             <View style={styles.inputWrapper}>
               <View style={styles.inputGroup}>
                 <TextInput
@@ -99,21 +199,18 @@ const ProfileScreen = () => {
               </View>
             </View>
 
-            <TouchableOpacity
-              style={[
-                styles.updateButton,
-                isEmailEntered && { backgroundColor: '#283593' }, // Change button color if email is entered
-              ]}
-              onPress={handleUpdateProfile}
-            >
+            <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile}>
               <Text style={styles.updateButtonText}>Update Profile</Text>
             </TouchableOpacity>
           </ImageBackground>
         </View>
       </ScrollView>
+      <Toast />
     </SafeAreaView>
   );
 };
+
+export default ProfileScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -155,11 +252,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   avatarImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
+  },
+  changePhotoText: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 5,
   },
   formContainer: {
     backgroundColor: '#FFFFFF',
@@ -176,7 +279,7 @@ const styles = StyleSheet.create({
   backgroundImage: {
     resizeMode: 'cover',
     borderRadius: wp('5%'),
-    opacity: 0.2, // Optional: makes background image semi-transparent
+    opacity: 0.2,
   },
   inputWrapper: {
     marginBottom: wp('5%'),
@@ -211,7 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   updateButton: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#283593',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -223,5 +326,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export default ProfileScreen;

@@ -1,102 +1,107 @@
-import React, { useState, useContext } from 'react'; // Import useContext
-import { View, StyleSheet, Text,Image ,TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState, useContext, useCallback } from 'react';
+import { View, StyleSheet, Text, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { useNavigation } from '@react-navigation/native';
-import AuthContext from '../../context/AuthContext'; // Import AuthContext
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AuthContext from '../../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import Footer from '../../Utils/Footer/Footer';
 import ChangePasswordModal from './ChangePasswordModal';
 
 const Profile = () => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation();
   const authContext = useContext(AuthContext);
-  const { user, logoutAction } = authContext || {};
+
+  const [user, setUser] = useState({
+    name: '',
+    mobile: '',
+    email: '',
+    dateOfBirth: '',
+    imageUri: '', // ✅ imageUri for profile image
+  });
 
   const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);
 
+  // ✅ Load profile every time screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfile = async () => {
+        try {
+          const storedUser = await AsyncStorage.getItem('userProfile');
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          } else {
+            // Default fallback user
+            setUser({
+              name: 'Sivakumar',
+              mobile: '9150203344',
+              email: '',
+              dateOfBirth: '',
+              imageUri: '',
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load profile:', error);
+        }
+      };
+
+      loadProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
-    if (logoutAction) {
-      try {
-        await logoutAction();
-        // Navigation to Login screen might be handled by a root navigator
-        // listening to auth state, or can be explicit here.
-        navigation.navigate('Login'); 
-      } catch (e) {
-        console.error("Logout failed", e);
-        Alert.alert("Error", "Logout failed. Please try again.");
-      }
-    }
+    await AsyncStorage.removeItem('userProfile');
+    navigation.navigate('Login');
   };
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.firsthalf}>
-          <View style={styles.firsthalfinner}>
-            <View style={styles.profilepic}>
-             <Image style={styles.profilepic} source={require('../../assets/person.png')} />
-              
-            </View>
-            <View style={styles.profiledetail}>
-          {/*    <Text style={styles.name}>{user?.name || 'Guest User'}</Text> */}
-           {/*   <Text style={styles.email}>{user?.email || 'Not logged in'}</Text> */}
-           <Text style={styles.name}>Sivakumar S</Text>
-           <Text style={styles.email}>Not updated</Text>
-            </View>
+        <View style={styles.firsthalfinner}>
+          <Image
+            style={styles.profilepic}
+            source={
+              user.imageUri
+                ? { uri: user.imageUri }
+                : require('../../assets/person.png')
+            }
+          />
+          <View style={styles.profiledetail}>
+            <Text style={styles.name}>{user?.name || 'Guest User'}</Text>
+            <Text style={styles.email}>{user?.email || 'Not updated'}</Text>
           </View>
         </View>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+      </View>
 
+      {/* Content */}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.secondhalf}>
           <Text style={styles.sectionTitle}>Account Settings</Text>
-          <ListItem icon="person-outline" label="Personal Information" onPress={()=>navigation.navigate('PersonalInfomation')}/>
-          {user && ( // Only show Change Password if user is logged in
-            <ListItem
-              icon="lock-closed-outline"
-              label="Change Password"
-              onPress={() => setIsChangePasswordModalVisible(true)}
-            />
-          )}
-          <ListItem
-            icon="notifications-outline"
-            label="Notification Preferences"
-          />
+
+          <ListItem icon="person-outline" label="Personal Information" onPress={() => navigation.navigate('PersonalInfomation')} />
+        {/*  <ListItem icon="lock-closed-outline" label="Change Password" onPress={() => setIsChangePasswordModalVisible(true)} /> */}
+          <ListItem icon="notifications-outline" label="Notification Preferences" />
 
           <Text style={styles.sectionTitle}>Orders</Text>
-          <ListItem 
-            icon="cube-outline" 
-            label="Your orders" 
-            onPress={() => navigation.navigate('OrderHistoryScreen') }
-          />
-          <ListItem 
-            icon="heart-outline" 
-            label="Wishlist" 
-            onPress={() => navigation.navigate('WishlistScreen') }
-          />
-          <ListItem icon="map-outline" label="Address book" />
+          <ListItem icon="cube-outline" label="Your Orders" onPress={() => navigation.navigate('OrderHistoryScreen')} />
+          <ListItem icon="heart-outline" label="Wishlist" onPress={() => navigation.navigate('WishlistScreen')} />
+          <ListItem icon="map-outline" label="Address Book" />
 
           <Text style={styles.sectionTitle}>More</Text>
-          <ListItem icon="information-circle-outline" label="About" />
-          <ListItem icon="sync-outline" label="Check app updates" />
+          <ListItem icon="information-circle-outline" label="About" onPress={() => navigation.navigate('AboutScreen')} />
+          <ListItem icon="sync-outline" label="Check App Updates" />
           <ListItem icon="help-circle-outline" label="Help" />
           <ListItem icon="settings-outline" label="Settings" />
-          {user && ( // Only show Logout if user is logged in
-            <ListItem 
-              icon="log-out-outline" 
-              label="Logout" 
-              onPress={handleLogout} 
-            />
-          )}
+          <ListItem icon="log-out-outline" label="Logout" onPress={handleLogout} />
         </View>
       </ScrollView>
-      <Footer />
-      <ChangePasswordModal 
-        visible={isChangePasswordModalVisible} 
-        onClose={() => setIsChangePasswordModalVisible(false)} 
+
+      <ChangePasswordModal
+        visible={isChangePasswordModalVisible}
+        onClose={() => setIsChangePasswordModalVisible(false)}
       />
     </View>
   );
@@ -105,7 +110,7 @@ const Profile = () => {
 interface ListItemProps {
   icon: string;
   label: string;
-  onPress?: () => void; // Make onPress prop optional
+  onPress?: () => void;
 }
 
 const ListItem: React.FC<ListItemProps> = ({ icon, label, onPress }) => (
@@ -117,19 +122,19 @@ const ListItem: React.FC<ListItemProps> = ({ icon, label, onPress }) => (
 );
 
 export default Profile;
-    
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   firsthalf: {
     height: hp("25%"),
-    backgroundColor: "rgba(40, 53, 147, 1)",
+    backgroundColor: "#283593",
     justifyContent: "center",
     paddingHorizontal: wp("5%"),
   },
   firsthalfinner: {
-    paddingTop:wp('10%'),
+    paddingTop: wp("10%"),
     flexDirection: "row",
     alignItems: "center",
   },
@@ -151,18 +156,11 @@ const styles = StyleSheet.create({
   email: {
     fontSize: wp("3.8%"),
     color: "#d1d1f7",
-  }, avatarImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
   },
   secondhalf: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
-    borderTopLeftRadius: wp("28%"),
-    borderTopRightRadius: wp("28%"),
-    paddingHorizontal:wp('5%')
-    
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: wp("5%"),
   },
   sectionTitle: {
     marginTop: hp("2%"),
@@ -175,7 +173,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: hp("1.5%"),
-    borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
   itemText: {
@@ -185,85 +182,6 @@ const styles = StyleSheet.create({
     color: "#222",
   },
   scrollContent: {
-    paddingBottom: hp('10%'), 
-  },
-});
-
-export const commonStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E6E9F0',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  backButton: {
-    flexDirection: "row",
-    padding: 8,
-  },
-  backText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  sectionContainer: {
-    paddingHorizontal: 16,
-    marginVertical: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  seeAllText: {
-    fontSize: 14,
-    color: '#4F46E5',
-    fontWeight: '500',
-  },
-  primaryButton: {
-    backgroundColor: '#4F46E5',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-   avatarImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#4F46E5',
-  },
-  secondaryButtonText: {
-    color: '#4F46E5',
-    fontSize: 16,
-    fontWeight: '600',
+    paddingBottom: hp("10%"),
   },
 });

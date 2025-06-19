@@ -14,9 +14,8 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import { useNavigation } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 
-// ✅ Single Product Data
 const product = {
   name: "Wheat Straw – 6kg",
   description:
@@ -29,14 +28,34 @@ const product = {
   quantityOptions: ["10", "20", "30", "40"],
 };
 
-const ProductDetails = ( { navigation }:any ) => {
+const ProductDetails = ({ navigation }: any) => {
+  const nav = useNavigation();
   const [customModalVisible, setCustomModalVisible] = useState(false);
   const [customQty, setCustomQty] = useState("");
- 
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const [selectedQuantity, setSelectedQuantity] = useState(
+    product.quantityOptions[0]
+  );
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const renderStars = (rati: any) => {
+  const handleCartNavigation = () => {
+    const quantityToUse = customQty || selectedQuantity;
+
+    const data = {
+      name: product.name,
+      price: product.price,
+      variant: selectedVariant,
+      quantity: quantityToUse,
+    };
+
+
+    (navigation || nav).navigate("Cart", {
+      showEmpty: true,
+      product: data,
+    });
+  };
+
+  const renderStars = (rati: number) => {
     const fullStars = Math.floor(rati);
     const hasHalfStar = rati % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
@@ -54,7 +73,12 @@ const ProductDetails = ( { navigation }:any ) => {
     }
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
-        <Ionicons key={`empty-${i}`} name="star-outline" size={18} color="#FFD700" />
+        <Ionicons
+          key={`empty-${i}`}
+          name="star-outline"
+          size={18}
+          color="#FFD700"
+        />
       );
     }
 
@@ -65,10 +89,14 @@ const ProductDetails = ( { navigation }:any ) => {
     <SafeAreaView style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
       >
         <View style={styles.header}>
-          <Ionicons name="chevron-back" size={24} onPress={() => navigation.goBack()} />
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            onPress={() => (navigation || nav).goBack()}
+          />
           <Text style={styles.headerTitle}>Product details</Text>
         </View>
 
@@ -134,10 +162,23 @@ const ProductDetails = ( { navigation }:any ) => {
             {product.quantityOptions.map((qty) => (
               <TouchableOpacity
                 key={qty}
-                style={styles.quantityButton}
-                onPress={() => console.log(`Selected quantity: ${qty}`)}
+                style={[
+                  styles.quantityButton,
+                  selectedQuantity === qty && styles.variantSelected,
+                ]}
+                onPress={() => {
+                  setCustomQty(""); // clear custom if selected
+                  setSelectedQuantity(qty);
+                }}
               >
-                <Text style={styles.quantityText}>{qty}</Text>
+                <Text
+                  style={[
+                    styles.quantityText,
+                    selectedQuantity === qty && styles.variantTextSelected,
+                  ]}
+                >
+                  {qty}
+                </Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
@@ -166,6 +207,7 @@ const ProductDetails = ( { navigation }:any ) => {
                 style={styles.modalButtonPrimary}
                 onPress={() => {
                   setCustomModalVisible(false);
+                  setSelectedQuantity(""); // clear preset quantity
                   console.log("Custom quantity entered:", customQty);
                 }}
               >
@@ -177,13 +219,10 @@ const ProductDetails = ( { navigation }:any ) => {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.cartButton} onPress={()=>navigation.navigate('Cart',{showEmpty: true})}>
+        <TouchableOpacity style={styles.cartButton} onPress={handleCartNavigation}>
           <Text style={styles.cartButtonText}>Add to cart</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.buyButton}
-          onPress={()=>navigation.navigate('Cart',{showEmpty: true})}
-        >
+        <TouchableOpacity style={styles.buyButton} onPress={handleCartNavigation}>
           <Text style={styles.buyButtonText}>Buy Now</Text>
         </TouchableOpacity>
       </View>
@@ -193,9 +232,11 @@ const ProductDetails = ( { navigation }:any ) => {
 
 export default ProductDetails;
 
+
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
-  container: { paddingBottom: hp("20%") },
+  container: { paddingBottom: hp("13%") },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -379,10 +420,10 @@ modalOverlay: {
 
 modalContent: {
   width: "80%",
+
   backgroundColor: "#FFFFFF",
   borderRadius: 12,
   padding: 20,
-  height:'20%',
   alignItems: "flex-start",
 },
 
@@ -404,6 +445,7 @@ modalInput: {
 },
 
 modalButtons: {
+  alignItems: "center",
   flexDirection: "row",
   justifyContent: "space-between",
   width: "50%",

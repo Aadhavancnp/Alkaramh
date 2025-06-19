@@ -14,6 +14,7 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import Footer from '@/Utils/Footer/Footer';
 
 // Replace this with your actual navigation param list
 type RootStackParamList = {
@@ -58,6 +59,34 @@ const products: Product[] = [
     reviews: '2.1K',
     description: 'Top-rated product among farmers.',
   },
+  {
+    id: '4',
+    name: 'Wheat straw',
+    image: require('../../assets/wheat.png'),
+    rating: 4.8,
+    price: 12,
+    reviews: '2.1K',
+    description: 'Top-rated product among farmers.',
+  },
+  {
+    id: '5',
+    name: 'Wheat straw',
+    image: require('../../assets/wheat.png'),
+    rating: 4.8,
+    price: 12,
+    reviews: '2.1K',
+    description: 'Top-rated product among farmers.',
+  },
+  {
+    id: '6',
+    name: 'Wheat straw',
+    image: require('../../assets/wheat.png'),
+    rating: 4.8,
+    price: 12,
+    reviews: '2.1K',
+    description: 'Top-rated product among farmers.',
+  },
+
 ];
 
 const renderStars = (rating: number) => {
@@ -118,6 +147,7 @@ const ListProduct: React.FC = () => {
               <Text style={styles.description}>{item.description}</Text>
             </View>
           </View>
+        
         </TouchableWithoutFeedback>
       )}
     />
@@ -126,7 +156,7 @@ const ListProduct: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    //padding: 16,
   },
   card: {
     flexDirection: 'row',
@@ -134,11 +164,9 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
+  
+    borderBottomColor: '#D9D9D9',
+    borderBottomWidth: hp('0.1%'),
   },
   imageContainer: {
     position: 'relative',

@@ -30,7 +30,7 @@ const Footer = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.footer}>
         {tabs.map((tab) => {
-          const isActive = currentRoute === tab.name;
+          const isActive = currentRoute === tab.name ;
 
           return (
             <TouchableOpacity

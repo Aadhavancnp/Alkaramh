@@ -144,7 +144,7 @@ const WishlistScreen: React.FC = () => {
           />
         )}
       </SafeAreaView>
-      <Footer />
+   {/* <Footer /> */}
     </View>
   );
 };

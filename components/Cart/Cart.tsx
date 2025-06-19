@@ -31,6 +31,7 @@ interface CartItem {
   _id: string;
   product: Product;
   quantity: number;
+  varient?: string; // Optional variant field
 }
 
 const Cart = () => {
@@ -40,6 +41,7 @@ const Cart = () => {
   const [showLocations, setShowLocations] = useState<boolean>(false);
   const [selectedLocation, setSelectedLocation] = useState<string>("Abu Nakhlah, Qatar...");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [editingQuantities, setEditingQuantities] = useState<{ [productId: string]: string }>({});
 
   const locations = [
     "Abu Nakhlah, Qatar",
@@ -54,7 +56,8 @@ const Cart = () => {
   useEffect(() => {
     const params = route.params;
     const showEmpty = params?.showEmpty === true;
-    
+    const product = params?.product;
+    console.log("Route Params:", product);
     if (!showEmpty) {
       setCartItems([]);
     } else {
@@ -70,7 +73,9 @@ const Cart = () => {
             image: ["../../assets/wheatStraw.png"],
             stock: 50,
           },
-          quantity: 20
+          varient: product?.variant || "default", // Use the variant from params or default
+          quantity: parseInt(product.quantity || 20, 10),
+          // Default to "default" if variant not provided
         }
       ]);
     }
@@ -86,9 +91,11 @@ const Cart = () => {
   };
 
   const handleRemoveFromCart = () => {
-    Alert.alert("Success", "Item removed from cart.");
     setdeletemodal(false);
     setProductToDeleteId(null);
+    setCartItems((prevItems) =>
+      prevItems.filter((item) => item.product._id !== productToDeleteId)
+    );
   };
 
   const toggleSelectItem = (id: string) => {
@@ -108,6 +115,7 @@ const Cart = () => {
       prevItems.map((item) => {
         if (item.product._id === productId) {
           const newQuantity = item.quantity + change;
+          
           if (newQuantity < 1) {
             Alert.alert("Invalid quantity", "Quantity cannot be less than 1");
             return item; // No change
@@ -151,7 +159,7 @@ const Cart = () => {
       <View style={{ flex: 1 }}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Ionicons name="chevron-back" onPress={() => navigation.navigate("Home")} size={24} style={styles.headerTitle}/>
+            <Ionicons name="chevron-back" onPress={() => navigation.goBack()} size={24} style={styles.headerTitle}/>
             <Text style={styles.headerTitle}>
               {cartItems.length === 0 ? "Cart" : "Your Order"}
             </Text>
@@ -202,7 +210,7 @@ const Cart = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.exploreButton}
-                    onPress={() => navigation.navigate("Home")}
+                    onPress={() => navigation.goBack()}
                   >
                     <Text style={styles.exploreButtonText}>Explore Now</Text>
                   </TouchableOpacity>
@@ -225,9 +233,10 @@ const Cart = () => {
                     <View style={styles.productDetailsContainer}>
                       <Text style={styles.cartName} numberOfLines={1}>
                         {item.product.name.en}
+                        
                       </Text>
-                      <Text style={styles.productDesc}>
-                        {item.product.description.en}
+                      <Text style={styles.productDesc} numberOfLines={1}>
+                      {item.varient}  
                       </Text>
                       <Text style={styles.priceText}>
                         {item.product.price} QAR
@@ -240,27 +249,75 @@ const Cart = () => {
                           <MaterialIcons name="remove-circle-outline" size={24} color="#666" />
                         </TouchableOpacity>
                         
-                        <TextInput
-                          style={styles.quantityInput} 
-                          keyboardType="numeric"
-                          value={item.quantity.toString()}
-                          onChangeText={(text) => {
-                            const newValue = parseInt(text) || 0;
-                            if (newValue > item.product.stock) {
-                              Alert.alert(
-                                "Stock Limit",
-                                `Maximum available stock is ${item.product.stock}`
-                              );
-                              return;
-                            }
-                          }}
-                          onBlur={() => {
-                            const finalValue = parseInt(item.quantity.toString()) || 0;
-                            if (finalValue >= 1 && finalValue <= item.product.stock) {
-                              handleDirectQuantityChange(item.product._id, finalValue.toString(), item.product.stock);
-                            }
-                          }}
-                        />
+                      <TextInput
+  style={{
+    borderWidth: 1,
+    borderColor: "#ccc",
+    width: 50,
+    textAlign: "center",
+    marginHorizontal: 8,
+    padding: 4,
+    borderRadius: 6,
+  }}
+  keyboardType="numeric"
+  value={
+    editingQuantities[item.product._id] !== undefined
+      ? editingQuantities[item.product._id]
+      : item.quantity.toString()
+  }
+  onChangeText={(text) => {
+    // Allow only digits
+    if (/^\d*$/.test(text)) {
+      setEditingQuantities((prev) => ({
+        ...prev,
+        [item.product._id]: text,
+      }));
+    }
+  }}
+  onBlur={() => {
+    const rawValue = editingQuantities[item.product._id];
+    const parsedQuantity = parseInt(rawValue || "", 10);
+
+    if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+      Alert.alert("Invalid Quantity", "Please enter a quantity of at least 1.");
+      setEditingQuantities((prev) => ({
+        ...prev,
+        [item.product._id]: item.quantity.toString(), // reset to old value
+      }));
+      return;
+    }
+
+    if (parsedQuantity > item.product.stock) {
+      Alert.alert(
+        "Stock Limit",
+        `Only ${item.product.stock} items available.`
+      );
+      setEditingQuantities((prev) => ({
+        ...prev,
+        [item.product._id]: item.product.stock.toString(),
+      }));
+      return;
+    }
+
+    // Update cart quantity
+    setCartItems((prevItems) =>
+      prevItems.map((cartItem) =>
+        cartItem.product._id === item.product._id
+          ? { ...cartItem, quantity: parsedQuantity }
+          : cartItem
+      )
+    );
+
+    // Remove temporary edit state
+    setEditingQuantities((prev) => {
+      const updated = { ...prev };
+      delete updated[item.product._id];
+      return updated;
+    });
+  }}
+/>
+
+
                         
                         <TouchableOpacity
                           onPress={() => handleUpdateQuantity(item.product._id, 1)}
@@ -339,7 +396,7 @@ const Cart = () => {
     </View>
   </View>
 </Modal>
-  {cartItems.length === 0 ? <Footer/> :null}
+ 
     </SafeAreaView>
     
   );
@@ -358,11 +415,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F6FC",
   },
   header: {
-
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 0,
-
   },
   headerTitle: {
     marginTop: hp("2.5%"),
@@ -374,7 +428,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 8,
+    borderRadius: wp("2%"),
     padding: wp("3%"),
     marginTop: hp("2%"),
   },
@@ -385,19 +439,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cartCard: {
-    borderRadius: 16,
+    borderRadius: wp("4%"),
     marginVertical: hp("1%"),
-    padding: 12,
-   
+    padding: wp("3%"),
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 10,
+    paddingRight: wp("2.5%"),
   },
   cartItemBox: {
     height: hp("67%"),
-    borderRadius: 10,
+    borderRadius: wp("2%"),
     backgroundColor: "#fff",
-    marginTop: 10,
+    marginTop: hp("1.5%"),
     flex: 1,
     alignItems: "center"
   },
@@ -409,66 +462,65 @@ const styles = StyleSheet.create({
   cartImage: {
     width: wp('20%'),
     height: wp('20%'),
-    borderRadius: 10,
+    borderRadius: wp("2%"),
     backgroundColor: "#f4f4f4",
   },
   cardImageBox: {
-    padding: 8,
+    padding: wp("2%"),
     backgroundColor: "#fff",
-    marginRight: 10,
-    borderRadius: 10,
+    marginRight: wp("2.5%"),
+    borderRadius: wp("2%"),
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
   },
   productDetailsContainer: {
     flex: 1,
-    paddingVertical: 5,
+    paddingVertical: hp("1%"),
   },
   cartName: {
-    fontSize: wp('4.5%'),
+    justifyContent: "space-between",
+    fontSize: wp("3.5%"),
     fontWeight: "600",
     color: "#333",
     flex: 1,
-    marginRight: 8,
+    marginRight: wp("3%"),
   },
   productDesc: {
-    fontSize: wp('3.5%'),
+
+    fontSize: wp("3.5%"),
     color: '#666',
-    marginBottom: hp('0.5%'),
+    
   },
   priceText: {
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
     fontWeight: 'bold',
     color: '#2A3B8F',
-    marginBottom: hp('1%'),
+  
   },
   quantityControl: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: 20,
-    marginTop: hp('0.5%'),
+    columnGap: wp("5%"),
+    marginTop: hp("0.5%"),
   },
   quantityInput: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingVertical: hp('0.5%'),
-    paddingHorizontal: wp('2%'),
-    fontSize: wp('4%'),
+    borderRadius: wp("2%"),
+    paddingVertical: hp("0.5%"),
+    paddingHorizontal: wp("2%"),
+    fontSize: wp("4%"),
     fontWeight: '500',
     color: '#333',
-    minWidth: wp('12%'),
+    minWidth: wp("12%"),
     textAlign: 'center',
   },
   deleteBtn: {
-    padding: 4,
+    padding: wp("1%"),
     backgroundColor: "#fee0e3",
     borderRadius: 50
   },
@@ -478,16 +530,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: hp("2%"),
     paddingHorizontal: wp("4%"),
-    paddingTop: 10,
-    paddingBottom: 8,
+    paddingTop: hp("1%"),
+    paddingBottom: hp("1%"),
     zIndex: 10,
   },
   checkoutBtnUltra: {
     backgroundColor: "#283593",
-    paddingVertical: hp("2.0%"),
-    borderRadius: 12,
+    paddingVertical: hp("2%"),
+    borderRadius: wp("3%"),
     alignItems: "center",
-    marginHorizontal: 0,
   },
   checkoutText: {
     color: "#fff",
@@ -504,8 +555,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginTop: 4,
+    borderRadius: wp("2%"),
+    marginTop: hp("0.5%"),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -514,24 +565,24 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   locationItem: {
-    padding: wp('4%'),
+    padding: wp("4%"),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   locationText: {
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
     color: '#333',
   },
-  emptyCartContainer:{
+  emptyCartContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     marginTop: hp("5%"),
     paddingHorizontal: wp("4%"),
   },
-emptyCartCard:{
-  backgroundColor: "#fff",
-    borderRadius: 20,
+  emptyCartCard: {
+    backgroundColor: "#fff",
+    borderRadius: wp("5%"),
     paddingVertical: hp("5%"),
     paddingHorizontal: wp("5%"),
     alignItems: "center",
@@ -541,43 +592,42 @@ emptyCartCard:{
     shadowRadius: 4,
     elevation: 5,
     width: '100%',
-},
-  
-emptyCartImage:{
-  width: wp("70%"),
+  },
+  emptyCartImage: {
+    width: wp("70%"),
     height: hp("25%"),
     resizeMode: "contain",
     marginBottom: hp("2%"),
-},
-emptyCartTitle:{
-  fontSize: wp("5%"),
+  },
+  emptyCartTitle: {
+    fontSize: wp("5%"),
     fontWeight: "bold",
     color: "#333",
     marginBottom: hp("1%"),
-},
-exploreButton: {
-    backgroundColor: "#283593",
-    paddingVertical: hp("1.5%"),
-    borderRadius: 12,
-    paddingHorizontal: wp("20%"),
-    width: "100%",
-    alignSelf: "center",
-    justifyContent: "center",
-    alignItems: "center",
   },
-    emptyCartSubtitle: {
+  emptyCartSubtitle: {
     fontSize: wp("4%"),
     color: "#666",
     textAlign: "center",
     marginBottom: hp("3%"),
     paddingHorizontal: wp("5%"),
   },
+  exploreButton: {
+    backgroundColor: "#283593",
+    paddingVertical: hp("1.5%"),
+    borderRadius: wp("3%"),
+    paddingHorizontal: wp("20%"),
+    width: "100%",
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   exploreButtonText: {
     color: "#fff",
     fontSize: wp("4.2%"),
     fontWeight: "bold",
     textAlign: "center",
-      width: "100%" ,
+    width: "100%",
   },
   modalOverlay: {
     flex: 1,
@@ -585,49 +635,44 @@ exploreButton: {
     justifyContent: "center",
     alignItems: "center",
   },
-
- modalContainer: {
-  backgroundColor: "white",
-  borderRadius: wp("5%"),
-  width: wp("85%"),
-  paddingTop: hp("6%"),
-  paddingBottom: hp("3%"),
-  paddingHorizontal: wp("5%"),
-  alignItems: "center",
-  position: "relative",
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.25,
-  shadowRadius: 4,
-  elevation: 5,
-  overflow: 'visible',
-},
-
-modalDip: {
-  position: 'absolute',
-  top: -wp("12%"),
-  left: wp("25%") , // center it
-  right: wp("50%"),
-  width: wp("34%"),
-  height: wp("34%"),
-  borderRadius: wp("20%"),
-  borderColor: "black",
-  backgroundColor: "white",
-  // zIndex: -1,
-},
+  modalContainer: {
+    backgroundColor: "white",
+    borderRadius: wp("5%"),
+    width: wp("85%"),
+    paddingTop: hp("6%"),
+    paddingBottom: hp("3%"),
+    paddingHorizontal: wp("5%"),
+    alignItems: "center",
+    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    overflow: 'visible',
+  },
+  modalDip: {
+    position: 'absolute',
+    top: -wp("12%"),
+    left: wp("25%"),
+    right: wp("50%"),
+    width: wp("34%"),
+    height: wp("34%"),
+    borderRadius: wp("20%"),
+    backgroundColor: "white",
+  },
   trashIconContainer: {
-   position: "absolute",
-  top: -wp("10%"),
-  width: wp("16%"),
-  height: wp("16%"),
-  borderRadius: wp("8%"),
-  backgroundColor: "#FFEBEE",
-  borderWidth: 2,
-  borderColor: "#EF4444",
-  justifyContent: 'center',
-  alignItems: 'center',
-  elevation: 6,
-
+    position: "absolute",
+    top: -wp("10%"),
+    width: wp("16%"),
+    height: wp("16%"),
+    borderRadius: wp("8%"),
+    backgroundColor: "#FFEBEE",
+    borderWidth: 2,
+    borderColor: "#EF4444",
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
   },
   modalTitle: {
     fontSize: wp("4.5%"),
@@ -672,5 +717,4 @@ modalDip: {
     fontWeight: "600",
     fontSize: wp("4%"),
   },
-  
 });

@@ -6,70 +6,69 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
- const translations = {
-    English : {
-      firsttext:'Please check your Email or phone',
-      secondtext:'We have sent the code to +974XXXXXX3344',
-      otpresendtext:'Send code again',
-      verifytext:'Verify',
-      switchLang: "عربي"
 
-    },
-    Arabic:{
-      firsttext:'يرجى التحقق من بريدك الإلكتروني أو هاتفك',
-      secondtext:'لقد أرسلنا الرمز إلى +XXXXX3344',
-      otpresendtext:'أرسل الرمز مرة أخرى',
-      verifytext:'يؤكد',
-      switchLang: "English"
-    }
-  };
-  const Otp = () => {
-    
-  const route = useRoute(); 
-  const  {lang}= route.params || { lang: 'English' };
-  const t = translations[lang];
 
-  
-  const navigation:any=useNavigation();
+
+const Otp = () => {
+  const translations = {
+  English: {
+    firsttext: 'Please check your Email or phone',
+    secondtext: 'We have sent the code to +974XXXXXX3344',
+    otpresendtext: 'Send code again',
+    verifytext: 'Verify',
+    switchLang: "عربي",
+  },
+  Arabic: {
+    firsttext: 'يرجى التحقق من بريدك الإلكتروني أو هاتفك',
+    secondtext: 'لقد أرسلنا الرمز إلى +XXXXX3344',
+    otpresendtext: 'أرسل الرمز مرة أخرى',
+    verifytext: 'يؤكد',
+    switchLang: "English",
+  },
+};
+  const route = useRoute();
+  const navigation: any = useNavigation();
   const otpInput = useRef<any>(null);
+
+  const lang = (route.params as any)?.lang || 'English';
+  const t = translations[lang] || translations.English;
+
+  const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
-const[otp,setotp]=useState('');
+
   useEffect(() => {
     if (timer === 0) {
       setCanResend(true);
       return;
     }
-
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-
+    const interval = setInterval(() => setTimer(prev => prev - 1), 1000);
     return () => clearInterval(interval);
   }, [timer]);
 
   const handleChange = (code: string) => {
+    setOtp(code);
     console.log('OTP Code:', code);
-    setotp(code);
   };
 
   const handleResend = () => {
     console.log('Resend Code');
     setTimer(30);
     setCanResend(false);
-    // You can also trigger your resend OTP API here
+    // Trigger resend OTP API here if needed
   };
-const handleverify=():void=>{
-    navigation.navigate("Home")
 
-}
+  const handleVerify = () => {
+    // Add verification logic here if needed
+    navigation.navigate("Dashboard");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
         <Text style={styles.firsttext}>{t.firsttext}</Text>
-        <Text style={styles.secondtext}>
-        {t.secondtext}
-        </Text>
+        <Text style={styles.secondtext}>{t.secondtext}</Text>
+
         <View style={styles.otpfield}>
           <OTPTextInput
             ref={otpInput}
@@ -77,7 +76,7 @@ const handleverify=():void=>{
             inputCount={5}
             tintColor="#555"
             offTintColor="#ccc"
-           containerStyle={{ justifyContent: "space-between" }}
+            containerStyle={styles.otpContainer}
             textInputStyle={styles.otpbox}
           />
         </View>
@@ -94,7 +93,7 @@ const handleverify=():void=>{
       </View>
 
       <View style={styles.verifycontainer}>
-        <TouchableOpacity style={styles.verifybutton} onPress={handleverify}>
+        <TouchableOpacity style={styles.verifybutton} onPress={handleVerify}>
           <Text style={styles.verifytext}>{t.verifytext}</Text>
         </TouchableOpacity>
       </View>
@@ -103,7 +102,6 @@ const handleverify=():void=>{
 };
 
 export default Otp;
-
 
 const styles = StyleSheet.create({
   container: {
@@ -130,6 +128,10 @@ const styles = StyleSheet.create({
     paddingTop: hp("5%"),
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
+  },
+  otpContainer: {
+    justifyContent: "space-between",
   },
   otpbox: {
     borderWidth: 1,
@@ -139,6 +141,8 @@ const styles = StyleSheet.create({
     borderRadius: wp("2%"),
     width: wp("12%"),
     height: wp("12%"),
+    padding: 0,
+    marginHorizontal: wp("1%"),
   },
   otresendsection: {
     marginTop: hp("2%"),
