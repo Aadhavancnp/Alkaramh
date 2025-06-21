@@ -54,6 +54,7 @@ export default function Dashboard() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
+  
           paddingTop: hp('1%'),
           height: hp('10%'),
           backgroundColor: '#fff',

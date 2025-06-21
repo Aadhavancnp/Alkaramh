@@ -119,6 +119,8 @@ export const homeStyles = StyleSheet.create({
     flex: 1,
   },
   categoryItemActive: {
+    borderBottomWidth:wp('0.2%'),
+    borderColor:"#283593"
     // Active category styling handled by text color
   },
   categoryIcon: {
@@ -144,6 +146,7 @@ export const homeStyles = StyleSheet.create({
   categoryNameActive: {
     color: '#333',
     fontWeight: '600',
+
   },
   filterBar: {
     flexDirection: 'row',
@@ -216,9 +219,9 @@ export const homeStyles = StyleSheet.create({
     paddingHorizontal: wp('5%'),
   },
   productimage:{
-    marginTop:wp('10%'),
-    width:wp('30%'),
-    height:hp('20%'),
+    marginTop:50,
+    width:wp("30%"),
+    height:hp("15%"),
     zIndex:1
 
   },
@@ -226,7 +229,7 @@ export const homeStyles = StyleSheet.create({
     width: wp('40%'),
     backgroundColor: '#fff',
     borderRadius: 30,
-    marginRight: wp('5%'),
+    marginRight: wp('6%'),
     justifyContent: 'space-between',
    
   },
@@ -268,7 +271,7 @@ export const homeStyles = StyleSheet.create({
     padding:wp('2%'),
     marginBottom:hp('4%'),
     right:wp('10%'),
-    bottom:hp('4%')
+    bottom:hp('3%')
   },
   rating: {
     fontSize: wp('3%'),

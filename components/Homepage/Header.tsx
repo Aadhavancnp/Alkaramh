@@ -1,59 +1,47 @@
-import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { Ionicons, AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-
 import {
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
+  View,
   TextInput,
   TouchableOpacity,
-  View,
 } from "react-native";
-import {
-  heightPercentageToDP as hp,
-  widthPercentageToDP as wp,
-} from "react-native-responsive-screen";
-import { AntDesign } from "@expo/vector-icons";
-import { homeStyles as styles } from "./Homestyles"; // Assuming styles are defined in Home.tsx
-import FilterBar from "./Filterbar";
+import { homeStyles as styles } from "./Homestyles"; // Make sure Homestyles.ts exports `homeStyles`
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const Header = () => {
+  const navigation = useNavigation<any>();
 
-    const navigation = useNavigation();
-    const handleInputFocus = () => {
-      navigation.navigate('SearchScreen');
-    };
-    const handleNotification = () => {
-      navigation.navigate('NotificationScreen');
-    };
-  
+  const handleInputFocus = () => {
+    navigation.navigate("SearchScreen");
+  };
+
+  const handleNotification = () => {
+    navigation.navigate("NotificationScreen");
+  };
+
   return (
-  <View style={styles.content}>
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <AntDesign style={styles.searchIcon} name="search1" />
-              <TextInput
-                placeholder="Search deals, products & more..."
-                style={styles.searchInput}
-                placeholderTextColor="#999"
-                onFocus={() => navigation.navigate("SearchScreen")}
-              />
-            </View>
-            <TouchableOpacity style={styles.notificationButton} onPress={handleNotification}>
-              <View style={styles.notificationIcon}>
-                <AntDesign style={styles.notificationText} name="bells" />
-                <View style={styles.notificationDot} />
-              </View>
-            </TouchableOpacity>
-          </View>
-            
+    <View style={styles.content}>
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <AntDesign style={styles.searchIcon} name="search1" size={18} color="#999" />
+          <TextInput
+            placeholder="Search deals, products & more..."
+            style={styles.searchInput}
+            placeholderTextColor="#999"
+            onFocus={handleInputFocus}
+          />
         </View>
-      
-      )};
 
+        <TouchableOpacity style={styles.notificationButton} onPress={handleNotification}>
+          <View style={styles.notificationIcon}>
+            <Ionicons style={styles.notificationText} name="notifications-outline" size={22} color="#000" />
+            <View style={styles.notificationDot} />
+          </View>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 export default Header;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   SafeAreaView,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -15,40 +16,50 @@ import {
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { useNavigation } from "@react-navigation/native";
+import { API_URL } from "../../api.json";
 
-const product = {
-  name: "Wheat Straw – 6kg",
-  description:
-    "Al Karamh is renowned for its high-quality products. This product showcases their dedication to excellence. Customers trust Al Karamh for reliable and superior goods.",
-  price: "12 QAR",
-  rating: 4.5,
-  ratingCount: "1.24K Reviews",
-  image: require("../../assets/g-wheat.png"),
-  variants: ["10 kg", "20 kg", "30 kg"],
-  quantityOptions: ["10", "20", "30", "40"],
-};
-
-const ProductDetails = ({ navigation }: any) => {
+const ProductDetails = ({ navigation, route }: any) => {
   const nav = useNavigation();
+  const productId = route?.params?.product?.id;
+
+  const variants = ["10 kg", "20 kg", "30 kg"];
+  const quantityOptions = ["10", "20", "30", "40"];
+
+  const [product, setProduct] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+
+  const [basePrice, setBasePrice] = useState<number | null>(null);
+  const [displayPrice, setDisplayPrice] = useState<number>(0);
+  const [selectedVariant, setSelectedVariant] = useState(variants[0]);
+  const [selectedQuantity, setSelectedQuantity] = useState(quantityOptions[0]);
   const [customModalVisible, setCustomModalVisible] = useState(false);
   const [customQty, setCustomQty] = useState("");
-  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
-  const [selectedQuantity, setSelectedQuantity] = useState(
-    product.quantityOptions[0]
-  );
   const [isFavorite, setIsFavorite] = useState(false);
+
+  const calculatePrice = (variant: string) => {
+    if (!basePrice) return 0;
+    if (variant === "10 kg") return basePrice;
+    if (variant === "20 kg") return basePrice * 2;
+    if (variant === "30 kg") return basePrice * 3;
+    return basePrice;
+  };
+
+  const handleVariantSelect = (variant: string) => {
+    setSelectedVariant(variant);
+    const updatedPrice = calculatePrice(variant);
+    setDisplayPrice(updatedPrice);
+  };
 
   const handleCartNavigation = () => {
     const quantityToUse = customQty || selectedQuantity;
-
     const data = {
-      name: product.name,
-      price: product.price,
+      name: product.data?.name?.en || product.data?.name?.ar || "Unnamed",
+      price: displayPrice,
       variant: selectedVariant,
       quantity: quantityToUse,
+      image: product.data?.image,
     };
-
-
+    console.log(data);
     (navigation || nav).navigate("Cart", {
       showEmpty: true,
       product: data,
@@ -62,47 +73,63 @@ const ProductDetails = ({ navigation }: any) => {
     const stars = [];
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Ionicons key={`full-${i}`} name="star" size={18} color="#FFD700" />
-      );
+      stars.push(<Ionicons key={`full-${i}`} name="star" size={18} color="#FFD700" />);
     }
     if (hasHalfStar) {
-      stars.push(
-        <Ionicons key={`half`} name="star-half" size={18} color="#FFD700" />
-      );
+      stars.push(<Ionicons key={`half`} name="star-half" size={18} color="#FFD700" />);
     }
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Ionicons
-          key={`empty-${i}`}
-          name="star-outline"
-          size={18}
-          color="#FFD700"
-        />
-      );
+      stars.push(<Ionicons key={`empty-${i}`} name="star-outline" size={18} color="#FFD700" />);
     }
 
     return stars;
   };
 
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/products/${productId}`);
+      const data = await res.json();
+      setProduct(data);
+      const priceFromApi = parseFloat(data.data?.price || "0");
+      setBasePrice(priceFromApi);
+      setDisplayPrice(priceFromApi);
+    } catch (error) {
+      console.error("Failed to fetch product:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const isImageUrl = typeof product.data?.image === "string";
+
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={true}
-      >
+      <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            onPress={() => (navigation || nav).goBack()}
-          />
+          <Ionicons name="chevron-back" size={24} onPress={() => (navigation || nav).goBack()} />
           <Text style={styles.headerTitle}>Product details</Text>
         </View>
 
         <View style={styles.imageContainer}>
           <Image
-            source={product.image}
+            source={isImageUrl ? { uri: product.data.image } : product.data.image}
             style={styles.productImage}
             resizeMode="contain"
           />
@@ -113,7 +140,9 @@ const ProductDetails = ({ navigation }: any) => {
 
         <View style={styles.content}>
           <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>{product.name}</Text>
+            <Text style={styles.productTitle}>
+              {product.data?.name?.en || product.data?.name?.ar || "Unnamed"}
+            </Text>
             <TouchableOpacity onPress={() => setIsFavorite(!isFavorite)}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
@@ -124,19 +153,19 @@ const ProductDetails = ({ navigation }: any) => {
           </View>
 
           <View style={styles.ratingRow}>
-            <View style={styles.starRow}>{renderStars(product.rating)}</View>
-            <Text style={styles.ratingValue}>{product.rating}</Text>
-            <Text style={styles.ratingCount}>({product.ratingCount})</Text>
+            <View style={styles.starRow}>{renderStars(product.data?.rating || 4.5)}</View>
+            <Text style={styles.ratingValue}>{product.data?.rating || 4.5}</Text>
+            <Text style={styles.ratingCount}>({product.data?.ratingCount || "0 Reviews"})</Text>
           </View>
 
-          <Text style={styles.price}>{product.price}</Text>
+          <Text style={styles.price}>{displayPrice.toFixed(0)} QAR</Text>
 
           <Text style={styles.sectionTitle}>Variants</Text>
           <View style={styles.variantRow}>
-            {product.variants.map((variant) => (
+            {variants.map((variant) => (
               <TouchableOpacity
                 key={variant}
-                onPress={() => setSelectedVariant(variant)}
+                onPress={() => handleVariantSelect(variant)}
                 style={[
                   styles.variantButton,
                   selectedVariant === variant && styles.variantSelected,
@@ -155,11 +184,15 @@ const ProductDetails = ({ navigation }: any) => {
           </View>
 
           <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.description}>{product.description}</Text>
+          <Text style={styles.description}>
+            {product.data?.description?.en ||
+              product.data?.description?.ar ||
+              "No description provided."}
+          </Text>
 
           <Text style={styles.sectionTitle}>Choose Quantity</Text>
           <View style={styles.quantityRow}>
-            {product.quantityOptions.map((qty) => (
+            {quantityOptions.map((qty) => (
               <TouchableOpacity
                 key={qty}
                 style={[
@@ -167,7 +200,7 @@ const ProductDetails = ({ navigation }: any) => {
                   selectedQuantity === qty && styles.variantSelected,
                 ]}
                 onPress={() => {
-                  setCustomQty(""); // clear custom if selected
+                  setCustomQty("");
                   setSelectedQuantity(qty);
                 }}
               >
@@ -181,10 +214,7 @@ const ProductDetails = ({ navigation }: any) => {
                 </Text>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity
-              style={styles.customButton}
-              onPress={() => setCustomModalVisible(true)}
-            >
+            <TouchableOpacity style={styles.customButton} onPress={() => setCustomModalVisible(true)}>
               <Text style={styles.customText}>Custom</Text>
             </TouchableOpacity>
           </View>
@@ -208,7 +238,6 @@ const ProductDetails = ({ navigation }: any) => {
                 onPress={() => {
                   setCustomModalVisible(false);
                   setSelectedQuantity(""); // clear preset quantity
-                  console.log("Custom quantity entered:", customQty);
                 }}
               >
                 <Text style={styles.modalButtonTextPrimary}>Add to cart</Text>
@@ -231,7 +260,6 @@ const ProductDetails = ({ navigation }: any) => {
 };
 
 export default ProductDetails;
-
 
 
 const styles = StyleSheet.create({
@@ -301,8 +329,8 @@ const styles = StyleSheet.create({
   },
   price: {
     marginTop: hp("1%"),
-    color: "#2731d2",
-    fontSize: hp("2.2%"),
+    color: "#283593",
+    fontSize: hp("2.5%"),
     fontWeight: "bold",
   },
   sectionTitle: {
@@ -481,6 +509,11 @@ modalButtonTextPrimary: {
   color: "#fff",
   fontWeight: "600",
 },
+ loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
 
 });

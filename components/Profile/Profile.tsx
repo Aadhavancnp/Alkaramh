@@ -1,17 +1,29 @@
 import React, { useState, useContext, useCallback } from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  Platform,
+} from 'react-native';
 import { Icon } from 'react-native-elements';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import AuthContext from '../../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+
 import ChangePasswordModal from './ChangePasswordModal';
+import AuthContext from '../../context/AuthContext';
 
 const Profile = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const authContext = useContext(AuthContext);
 
   const [user, setUser] = useState({
@@ -19,12 +31,11 @@ const Profile = () => {
     mobile: '',
     email: '',
     dateOfBirth: '',
-    imageUri: '', // ✅ imageUri for profile image
+    imageUri: '',
   });
 
   const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);
 
-  // ✅ Load profile every time screen is focused
   useFocusEffect(
     useCallback(() => {
       const loadProfile = async () => {
@@ -33,7 +44,6 @@ const Profile = () => {
           if (storedUser) {
             setUser(JSON.parse(storedUser));
           } else {
-            // Default fallback user
             setUser({
               name: 'Sivakumar',
               mobile: '9150203344',
@@ -58,6 +68,11 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
+      {/* ✅ Fix for StatusBar on both Android & iOS */}
+      <View style={{ height: Platform.OS === 'ios' ? hp('6%') : 0, backgroundColor: '#283593' }}>
+        <StatusBar barStyle="light-content" backgroundColor="#283593" translucent={false} />
+      </View>
+
       {/* Header */}
       <View style={styles.firsthalf}>
         <View style={styles.firsthalfinner}>
@@ -82,7 +97,7 @@ const Profile = () => {
           <Text style={styles.sectionTitle}>Account Settings</Text>
 
           <ListItem icon="person-outline" label="Personal Information" onPress={() => navigation.navigate('PersonalInfomation')} />
-        {/*  <ListItem icon="lock-closed-outline" label="Change Password" onPress={() => setIsChangePasswordModalVisible(true)} /> */}
+          {/* <ListItem icon="lock-closed-outline" label="Change Password" onPress={() => setIsChangePasswordModalVisible(true)} /> */}
           <ListItem icon="notifications-outline" label="Notification Preferences" />
 
           <Text style={styles.sectionTitle}>Orders</Text>
@@ -126,9 +141,10 @@ export default Profile;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#E6E9F0"
   },
   firsthalf: {
-    height: hp("25%"),
+    height: hp("20%"),
     backgroundColor: "#283593",
     justifyContent: "center",
     paddingHorizontal: wp("5%"),
@@ -159,8 +175,11 @@ const styles = StyleSheet.create({
   },
   secondhalf: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
     paddingHorizontal: wp("5%"),
+    backgroundColor: "#FFFFFF",
+   
+    
+  
   },
   sectionTitle: {
     marginTop: hp("2%"),
@@ -168,12 +187,13 @@ const styles = StyleSheet.create({
     fontSize: hp("2%"),
     fontWeight: "600",
     color: "#333",
+    
   },
   item: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: hp("1.5%"),
-    borderBottomColor: "#e0e0e0",
+   
   },
   itemText: {
     flex: 1,
@@ -182,6 +202,8 @@ const styles = StyleSheet.create({
     color: "#222",
   },
   scrollContent: {
-    paddingBottom: hp("10%"),
+    paddingBottom: hp("4%"),
+   
+    
   },
 });

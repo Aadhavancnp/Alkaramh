@@ -21,8 +21,8 @@ import FilterBar from './Filterbar';
 import { StatusBar } from 'react-native';
 
 const Home: React.FC = () => {
-  const route = useRoute();
-  const navigation = useNavigation();
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
   const showClearedScreen = route?.params?.showCleared || false;
 
   const handleClear = () => {

@@ -17,7 +17,7 @@ import { heightPercentageToDP as hp , widthPercentageToDP as wp} from 'react-nat
 import { useNavigation } from '@react-navigation/native';
 
 const Checkoutpage = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [selectedPayment, setSelectedPayment] = useState('debit');
 
   return (
