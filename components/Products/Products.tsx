@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Image,
@@ -9,107 +9,124 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+} from "@react-navigation/native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import Footer from "../../Utils/Footer/Footer";
 import ListProduct from "./listproduct";
-import { BackHandler } from 'react-native';
+import { API_URL } from "../../api.json";
+import HeaderSection from "./HearderProduct";
 
 const Products = () => {
   const navigation = useNavigation();
-  const route = useRoute();
+  const route = useRoute<any>();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState<any[]>([]);
+  const [activeCategory, setActiveCategory] = useState("All products");
 
-  // 🔁 Detect swipe-back or back action and log it
-useFocusEffect(
-  React.useCallback(() => {
-    const onBackPress = () => {
-      navigation.navigate("Home", { showCleared: false });
-      return true; // prevent default behavior (exit app or go back)
-    };
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate("Home", { showCleared: false });
+        return true;
+      };
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+      return () => backHandler.remove();
+    }, [])
+  );
 
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_URL}/categories`);
+      const json = await res.json();
+      const apiCategories = json.data || [];
 
-    return () => backHandler.remove(); // ✅ clean up with .remove()
-  }, [])
-);
+      const defaultAll = {
+        _id: "all",
+        name: { en: "All products" },
+        isLocal: true,
+      };
+
+      const combined = [defaultAll, ...apiCategories];
+      setCategories(combined);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // 🔁 Set active category from route if passed
+  useEffect(() => {
+    if (route.params?.selectedCategory) {
+      setActiveCategory(route.params.selectedCategory.trim());
+    } else {
+      setActiveCategory("All products");
+    }
+  }, [route.params]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   return (
-    <SafeAreaView style={{ backgroundColor: "#fff", flex: 1 }}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home", { showCleared: false })}>
-          <Ionicons name="chevron-back" size={24} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Al Karamh Trading</Text>
-        <View style={styles.ratingBox}>
-          <Text style={styles.ratingText}>4.8 ★</Text>
-        </View>
-        <Text style={styles.ratingText2}>5k Ratings</Text>
-      </View>
-
-      <View style={styles.timeContainer}>
-        <Ionicons name="time-outline" size={16} color="#666" style={{ marginRight: 5 }} />
-        <Text style={styles.subtext}>120 - 150 mins</Text>
-      </View>
-
-      <View style={styles.badgeContainer}>
-        {["Last 100 Orders Without Complaints", "Bestseller", "Frequently Reordered"].map((text, idx) => (
-          <View key={idx} style={styles.badge}>
-            <Ionicons name="checkmark" size={16} color="#4CAF50" />
-            <Text style={styles.badgeText}> {text}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.searchheder}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="gray" />
-          <TextInput
-            placeholder="Search products here..."
-            style={styles.searchInput}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onPressIn={() => navigation.navigate("SearchScreen")}
-          />
-        </View>
-      </View>
-
+    <SafeAreaView style={{ backgroundColor: "#F3F4F8", flex: 1 }}>
+    
+   <HeaderSection/>
+    <View style={styles.searchContainer}>
+           <Ionicons name="search-outline" size={20} color="gray" style={{ marginRight: 6 }} />
+           <TextInput
+             placeholder="Search products here..."
+             placeholderTextColor="#999"
+             style={styles.searchInput}
+           />
+         </View>
+   
       <View style={styles.tabsContainers}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {[
-            "All products", "Aala Feed", "Alfalfa", "Corn", "Dates", "Hay",
-            "Hen Feed", "Milets", "Rodhes", "Mineral Salt"
-          ].map((category, index) => (
-            <Text
-              key={index}
-              style={[styles.tabs, category === "All products" && styles.activeTabs]}
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat._id}
+              onPress={() => setActiveCategory(cat.name.en)}
             >
-              {category}
-            </Text>
+              <Text
+                style={[
+                  styles.tabs,
+                  activeCategory === cat.name.en && styles.activeTabs,
+                ]}
+              >
+                {cat.name?.en}
+              </Text>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
+      <View style={{backgroundColor:'white'}}>    
+      <Text style={{ fontSize: 20, fontWeight: "bold", margin: hp('1%') }}>
+        {activeCategory || "All Products"}
+      </Text>
 
-      <Text style={{ fontSize: 20, fontWeight: "bold", margin: 16 }}>All Products</Text>
-
-      
-
-      <ListProduct />
-     
+      <ListProduct categoryId={activeCategory} searchQuery={searchQuery} />
+     </View>
     </SafeAreaView>
   );
 };
 
 
 
-export default Products;
+// (Your styles go here — same as before)
 
+export default Products;
 const styles = StyleSheet.create({
   container: {
     marginTop: hp("5%"),
@@ -120,7 +137,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: hp("3%"),
     marginHorizontal: wp("3%"),
+    backgroundColor:'#FFFFF'
   },
+  headerLeft:{
+    
+  },
+
   selectedTabText: {
     fontSize: 20,
     marginBottom: hp("2%"),
@@ -182,8 +204,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAFAFA",
     borderRadius: 10,
     marginHorizontal: wp("2%"),
-    paddingVertical:wp('4%') ,
     paddingHorizontal: wp("4%"),
+    paddingVertical:hp('1.5%'),
+    marginVertical:hp('2%'),
     borderWidth: .5,
     borderColor: "#C0C0C0",
   },
@@ -194,11 +217,11 @@ const styles = StyleSheet.create({
   
   },
   tabsContainers: {
-    marginVertical: hp("2%"),
+    paddingVertical:hp('1%'),
     paddingHorizontal: wp("5%"),
        
     backgroundColor: "#ffffffd8",
-    width: wp("94%"),
+    width: wp("100%"),
   },
   tabs: {
     marginRight: 20,

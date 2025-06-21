@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -14,85 +15,31 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import Footer from '@/Utils/Footer/Footer';
+import { API_URL } from '../../api.json';
 
-// Replace this with your actual navigation param list
 type RootStackParamList = {
   ProductIndetail: { product: Product };
 };
 
 type Product = {
   id: string;
-  name: string;
-  image: any;
+  name: { en: string; ar?: string };
+  image: string;
   rating: number;
   price: number;
-  reviews: string;
-  description: string;
+  reviews?: string;
+  description: { en?: string; ar?: string } | string;
 };
 
-const products: Product[] = [
-  {
-    id: '1',
-    name: 'Wheat straw',
-    image: require('../../assets/wheat.png'),
-    rating: 4.5,
-    price: 12,
-    reviews: '1.24K',
-    description: 'Al Karamh is renowned for its high-quality products.',
-  },
-  {
-    id: '2',
-    name: 'Wheat straw',
-    image: require('../../assets/wheat.png'),
-    rating: 4.0,
-    price: 12,
-    reviews: '850',
-    description: 'Premium wheat straw from trusted farms.',
-  },
-  {
-    id: '3',
-    name: 'Wheat straw',
-    image: require('../../assets/wheat.png'),
-    rating: 4.8,
-    price: 12,
-    reviews: '2.1K',
-    description: 'Top-rated product among farmers.',
-  },
-  {
-    id: '4',
-    name: 'Wheat straw',
-    image: require('../../assets/wheat.png'),
-    rating: 4.8,
-    price: 12,
-    reviews: '2.1K',
-    description: 'Top-rated product among farmers.',
-  },
-  {
-    id: '5',
-    name: 'Wheat straw',
-    image: require('../../assets/wheat.png'),
-    rating: 4.8,
-    price: 12,
-    reviews: '2.1K',
-    description: 'Top-rated product among farmers.',
-  },
-  {
-    id: '6',
-    name: 'Wheat straw',
-    image: require('../../assets/wheat.png'),
-    rating: 4.8,
-    price: 12,
-    reviews: '2.1K',
-    description: 'Top-rated product among farmers.',
-  },
-
-];
+type Props = {
+  categoryId?: string;       // Category name in `en` like "Feed", "Salt"
+  searchQuery?: string;
+};
 
 const renderStars = (rating: number) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
-    let icon =
+    const icon =
       i <= Math.floor(rating)
         ? 'star'
         : rating >= i - 0.5
@@ -103,15 +50,71 @@ const renderStars = (rating: number) => {
   return stars;
 };
 
-const ListProduct: React.FC = () => {
+const ListProduct: React.FC<Props> = ({ categoryId = 'all', searchQuery = '' }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [favorites, setFavorites] = useState<string[]>([]);
-
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  console.log(categoryId);
   const toggleFavorite = (id: string) => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
     );
   };
+
+ const fetchProducts = async () => {
+  try {
+    setLoading(true);
+    let data: Product[] = [];
+
+    if (categoryId === 'All products') {
+      // GET all products
+      const res = await fetch(`${API_URL}/products`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) data = json.data;
+    } else {
+      // POST to category filter endpoint with trimmed category name
+      const res = await fetch(`${API_URL}/categories/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: categoryId.trim() }),
+      });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) data = json.data;
+    }
+
+    const mapped: Product[] = data.map((item: any) => ({
+      id: item._id,
+      name: item.name || { en: 'Unnamed' },
+      image: typeof item.image === 'string' ? item.image : item.image?.[0] || 'https://via.placeholder.com/150',
+      price: item.price,
+      rating: item.rating || 4.5,
+      reviews: item.ratingCount || '10',
+      description: item.description || {},
+    }));
+
+    const filtered = searchQuery
+      ? mapped.filter((item) =>
+          item.name.en.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : mapped;
+
+    setProducts(filtered);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    setProducts([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  useEffect(() => {
+    fetchProducts();
+  }, [categoryId, searchQuery]);
+
+  if (loading) return null;
+  if (!products.length) return null;
 
   return (
     <FlatList
@@ -124,7 +127,7 @@ const ListProduct: React.FC = () => {
         >
           <View style={styles.card}>
             <View style={styles.imageContainer}>
-              <Image source={item.image} style={styles.image} />
+              <Image source={{ uri: item.image }} style={styles.image} />
               <TouchableOpacity
                 onPress={() => toggleFavorite(item.id)}
                 style={styles.heartIcon}
@@ -138,33 +141,34 @@ const ListProduct: React.FC = () => {
             </View>
 
             <View style={styles.content}>
-              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.name}>{item.name.en}</Text>
               <View style={styles.ratingRow}>
                 {renderStars(item.rating)}
                 <Text style={styles.reviews}> ({item.reviews})</Text>
               </View>
               <Text style={styles.price}>{item.price} QAR</Text>
-              <Text style={styles.description}>{item.description}</Text>
+              <Text style={styles.description}>
+                {typeof item.description === 'string'
+                  ? item.description
+                  : item.description?.en || item.description?.ar || 'Not Available'}
+              </Text>
             </View>
           </View>
-        
         </TouchableWithoutFeedback>
       )}
     />
   );
 };
 
+export default ListProduct;
 const styles = StyleSheet.create({
-  container: {
-    //padding: 16,
-  },
+  container: {},
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',
     padding: 12,
     borderRadius: 12,
     marginBottom: 16,
-  
     borderBottomColor: '#D9D9D9',
     borderBottomWidth: hp('0.1%'),
   },
@@ -218,5 +222,3 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
-
-export default ListProduct;

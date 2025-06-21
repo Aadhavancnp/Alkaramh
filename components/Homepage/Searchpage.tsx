@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     borderColor: '#C0C0C0',
     borderRadius: wp('2%'),
     paddingHorizontal: wp('4%'),
-    paddingVertical: hp('1%'),
+    paddingVertical:10 ,
   },
   searchIcon: {
     fontSize: wp('4%'),
